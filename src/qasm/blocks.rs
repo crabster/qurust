@@ -1,8 +1,6 @@
 use crate::qasm::gates::CustomGate;
-use crate::qasm::statements::{Statement, StatementTrait};
+use crate::qasm::statements::*;
 use crate::qasm::AsQasmStr;
-
-use std::rc::Rc;
 
 #[derive(Clone, Debug)]
 pub struct GateDeclaration {
@@ -35,36 +33,60 @@ impl AsQasmStr for GateDeclaration {
     }
 }
 
-mod private {
-    use super::*;
-
-    pub trait BlockTraitSealed {}
-
-    impl BlockTraitSealed for GateDeclaration {}
-    impl<T: StatementTrait> BlockTraitSealed for T {}
-}
-
-pub trait BlockTrait: AsQasmStr + private::BlockTraitSealed {}
-
-impl BlockTrait for GateDeclaration {}
-impl<T: StatementTrait> BlockTrait for T {}
-
 #[derive(Clone, Debug)]
-pub struct Block {
-    block: Rc<dyn BlockTrait>,
+pub enum Block {
+    GateDeclaration(GateDeclaration),
+    Statement(Statement),
 }
 
 impl AsQasmStr for Block {
     fn as_qasm_str(&self) -> String {
-        self.block.as_qasm_str()
+        match self {
+            Block::GateDeclaration(gate) => gate.as_qasm_str(),
+            Block::Statement(stmt) => stmt.as_qasm_str(),
+        }
     }
 }
 
-impl<T: BlockTrait + 'static> From<T> for Block {
-    fn from(block: T) -> Self {
-        Self {
-            block: Rc::new(block),
-        }
+impl From<GateDeclaration> for Block {
+    fn from(gate: GateDeclaration) -> Block {
+        Block::GateDeclaration(gate)
+    }
+}
+
+impl From<EmptyLine> for Block {
+    fn from(empty_line: EmptyLine) -> Block {
+        Block::Statement(empty_line.into())
+    }
+}
+
+impl From<Comment> for Block {
+    fn from(comment: Comment) -> Block {
+        Block::Statement(comment.into())
+    }
+}
+
+impl From<VersionDeclaration> for Block {
+    fn from(version_declaration: VersionDeclaration) -> Block {
+        Block::Statement(version_declaration.into())
+    }
+}
+
+impl From<VariableDeclaration> for Block {
+    fn from(variable_declaration: VariableDeclaration) -> Block {
+        Block::Statement(variable_declaration.into())
+    }
+}
+
+impl From<VariableAssignment> for Block {
+    fn from(variable_assignment: VariableAssignment) -> Block {
+        Block::Statement(variable_assignment.into())
+    }
+}
+
+impl From<GateApplication> for Block {
+    fn from(gate_application: GateApplication) -> Block {
+        Block::Statement(gate_application.into())
     }
 }
 

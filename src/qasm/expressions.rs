@@ -1,7 +1,5 @@
 use crate::qasm::AsQasmStr;
 
-use std::rc::Rc;
-
 pub type Identifier = String;
 
 impl AsQasmStr for Identifier {
@@ -91,19 +89,20 @@ impl AsQasmStr for ArrayAccess {
 
 #[derive(Clone, Debug)]
 pub struct Measurement {
-    expression: Expression,
+    expr: Box<Expression>,
 }
 
 impl Measurement {
     #[allow(clippy::new_ret_no_self)]
-    pub fn new<T: From<Measurement>>(expression: Expression) -> T {
-        Self { expression }.into()
+    pub fn new<T: From<Measurement>>(expr: Expression) -> T {
+        let expr = Box::new(expr);
+        Self { expr }.into()
     }
 }
 
 impl AsQasmStr for Measurement {
     fn as_qasm_str(&self) -> String {
-        format!("measure {}", self.expression.as_qasm_str())
+        format!("measure {}", self.expr.as_qasm_str())
     }
 }
 
@@ -129,13 +128,15 @@ impl AsQasmStr for BinOpType {
 #[derive(Clone, Debug)]
 pub struct BinOp {
     op: BinOpType,
-    lhs: Expression,
-    rhs: Expression,
+    lhs: Box<Expression>,
+    rhs: Box<Expression>,
 }
 
 impl BinOp {
     #[allow(clippy::new_ret_no_self)]
     fn new<T: From<BinOp>>(op: BinOpType, lhs: Expression, rhs: Expression) -> T {
+        let lhs = Box::new(lhs);
+        let rhs = Box::new(rhs);
         Self { op, lhs, rhs }.into()
     }
 }
@@ -187,44 +188,62 @@ impl DivOp {
     }
 }
 
-mod private {
-    use super::*;
-
-    pub trait ExpressionTraitSealed {}
-
-    impl ExpressionTraitSealed for Literal {}
-    impl ExpressionTraitSealed for Identifier {}
-    impl ExpressionTraitSealed for Array {}
-    impl ExpressionTraitSealed for ArrayAccess {}
-    impl ExpressionTraitSealed for Measurement {}
-    impl ExpressionTraitSealed for BinOp {}
-}
-
-pub trait ExpressionTrait: AsQasmStr + private::ExpressionTraitSealed {}
-
-impl ExpressionTrait for Literal {}
-impl ExpressionTrait for Identifier {}
-impl ExpressionTrait for Array {}
-impl ExpressionTrait for ArrayAccess {}
-impl ExpressionTrait for Measurement {}
-impl ExpressionTrait for BinOp {}
-
 #[derive(Clone, Debug)]
-pub struct Expression {
-    expression: Rc<dyn ExpressionTrait>,
+pub enum Expression {
+    Literal(Literal),
+    Identifier(Identifier),
+    Array(Array),
+    ArrayAccess(ArrayAccess),
+    Measurement(Measurement),
+    BinOp(BinOp),
 }
 
 impl AsQasmStr for Expression {
     fn as_qasm_str(&self) -> String {
-        self.expression.as_qasm_str()
+        match self {
+            Expression::Literal(lit) => lit.as_qasm_str(),
+            Expression::Identifier(id) => id.as_qasm_str(),
+            Expression::Array(array) => array.as_qasm_str(),
+            Expression::ArrayAccess(array_access) => array_access.as_qasm_str(),
+            Expression::Measurement(measurement) => measurement.as_qasm_str(),
+            Expression::BinOp(bin_op) => bin_op.as_qasm_str(),
+        }
     }
 }
 
-impl<T: ExpressionTrait + 'static> From<T> for Expression {
-    fn from(expression: T) -> Self {
-        Self {
-            expression: Rc::new(expression),
-        }
+impl From<Literal> for Expression {
+    fn from(literal: Literal) -> Self {
+        Expression::Literal(literal)
+    }
+}
+
+impl From<Identifier> for Expression {
+    fn from(identifier: Identifier) -> Self {
+        Expression::Identifier(identifier)
+    }
+}
+
+impl From<Array> for Expression {
+    fn from(array: Array) -> Self {
+        Expression::Array(array)
+    }
+}
+
+impl From<ArrayAccess> for Expression {
+    fn from(array_access: ArrayAccess) -> Self {
+        Expression::ArrayAccess(array_access)
+    }
+}
+
+impl From<Measurement> for Expression {
+    fn from(measurement: Measurement) -> Self {
+        Expression::Measurement(measurement)
+    }
+}
+
+impl From<BinOp> for Expression {
+    fn from(bin_op: BinOp) -> Self {
+        Expression::BinOp(bin_op)
     }
 }
 

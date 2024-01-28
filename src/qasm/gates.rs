@@ -1,8 +1,6 @@
 use crate::qasm::expressions::Expression;
 use crate::qasm::AsQasmStr;
 
-use std::rc::Rc;
-
 #[derive(Clone, Debug)]
 pub struct U3Gate {
     theta: Expression,
@@ -104,38 +102,38 @@ impl AsQasmStr for CustomGate {
     }
 }
 
-mod private {
-    use super::*;
-
-    pub trait GateTraitSealed {}
-
-    impl GateTraitSealed for U3Gate {}
-    impl GateTraitSealed for GPGate {}
-    impl GateTraitSealed for CustomGate {}
-}
-
-pub trait GateTrait: AsQasmStr + private::GateTraitSealed {}
-
-impl GateTrait for U3Gate {}
-impl GateTrait for GPGate {}
-impl GateTrait for CustomGate {}
-
 #[derive(Clone, Debug)]
-pub struct Gate {
-    gate: Rc<dyn GateTrait>,
+pub enum Gate {
+    U3(U3Gate),
+    GP(GPGate),
+    Custom(CustomGate),
 }
 
 impl AsQasmStr for Gate {
     fn as_qasm_str(&self) -> String {
-        self.gate.as_qasm_str()
+        match self {
+            Gate::U3(gate) => gate.as_qasm_str(),
+            Gate::GP(gate) => gate.as_qasm_str(),
+            Gate::Custom(gate) => gate.as_qasm_str(),
+        }
     }
 }
 
-impl<T: GateTrait + 'static> From<T> for Gate {
-    fn from(gate: T) -> Self {
-        Self {
-            gate: Rc::new(gate),
-        }
+impl From<U3Gate> for Gate {
+    fn from(gate: U3Gate) -> Self {
+        Gate::U3(gate)
+    }
+}
+
+impl From<GPGate> for Gate {
+    fn from(gate: GPGate) -> Self {
+        Gate::GP(gate)
+    }
+}
+
+impl From<CustomGate> for Gate {
+    fn from(gate: CustomGate) -> Self {
+        Gate::Custom(gate)
     }
 }
 
