@@ -1,3 +1,7 @@
+//! Structures and enums for QASM3 expressions representation.
+//!
+//! Expressions represent all values used in QASM3 programs. They are defined by the `Expression` enum.
+
 use crate::qasm3::AsQasmStr;
 
 /// QASM3 identifier expression.

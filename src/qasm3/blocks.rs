@@ -1,3 +1,8 @@
+//! Structures and enums for QASM3 blocks representation.
+//!
+//! Blocks are top level parts of QASM3 programs. They are defined by the `Block` enum.
+//! Statements can be also blocks.
+
 use crate::qasm3::gates::CustomGate;
 use crate::qasm3::statements::*;
 use crate::qasm3::AsQasmStr;

@@ -1,3 +1,9 @@
+//! Structures and enums for QASM3 gates representation.
+//!
+//! Gates are defined by the `Gate` enum. They are typically composed from expressions,
+//! defined by the `expressions::Expression` enum. They define their declaration's header
+//! and application's expression.
+
 use crate::qasm3::expressions::Expression;
 use crate::qasm3::AsQasmStr;
 
