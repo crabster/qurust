@@ -3,7 +3,7 @@ use crate::qasm::AsQasmStr;
 
 use std::rc::Rc;
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct U3Gate {
     theta: Expression,
     phi: Expression,
@@ -41,7 +41,7 @@ impl AsQasmStr for U3Gate {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct GPGate {
     delta: Expression,
 }
@@ -59,7 +59,7 @@ impl AsQasmStr for GPGate {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct CustomGate {
     name: String,
     params: Vec<Expression>,
@@ -104,7 +104,7 @@ impl AsQasmStr for CustomGate {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Gate {
     gate: Rc<dyn GateTrait>,
 }
