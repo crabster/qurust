@@ -3,7 +3,7 @@ use crate::qasm::gates::Gate;
 use crate::qasm::types::Type;
 use crate::qasm::AsQasmStr;
 
-#[derive(Clone, Debug)]
+#[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct EmptyLine {}
 
 impl EmptyLine {
@@ -19,7 +19,7 @@ impl AsQasmStr for EmptyLine {
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct Comment {
     comment: String,
 }
@@ -37,7 +37,7 @@ impl AsQasmStr for Comment {
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VersionDeclaration {
     version: String,
 }
@@ -55,7 +55,7 @@ impl AsQasmStr for VersionDeclaration {
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, PartialEq, PartialOrd, Debug)]
 pub struct VariableDeclaration {
     type_: Type,
     name: String,
@@ -83,7 +83,7 @@ impl AsQasmStr for VariableDeclaration {
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, PartialEq, PartialOrd, Debug)]
 pub struct VariableAssignment {
     left_expr: Expression,
     right_expr: Expression,
@@ -110,7 +110,7 @@ impl AsQasmStr for VariableAssignment {
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, PartialEq, PartialOrd, Debug)]
 pub struct GateApplication {
     gate: Gate,
 }
@@ -128,7 +128,7 @@ impl AsQasmStr for GateApplication {
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, PartialEq, PartialOrd, Debug)]
 pub enum Statement {
     EmptyLine(EmptyLine),
     Comment(Comment),

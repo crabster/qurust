@@ -8,7 +8,7 @@ impl AsQasmStr for Identifier {
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Copy, Clone, PartialEq, PartialOrd, Debug)]
 pub enum Literal {
     Bit(bool),
     Bool(bool),
@@ -56,7 +56,7 @@ impl AsQasmStr for Array {
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct ArrayAccess {
     identifier: Identifier,
     indices: Vec<isize>,
@@ -87,7 +87,7 @@ impl AsQasmStr for ArrayAccess {
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, PartialEq, PartialOrd, Debug)]
 pub struct Measurement {
     expr: Box<Expression>,
 }
@@ -106,7 +106,7 @@ impl AsQasmStr for Measurement {
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 enum BinOpType {
     Plus,
     Minus,
@@ -125,7 +125,7 @@ impl AsQasmStr for BinOpType {
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, PartialEq, PartialOrd, Debug)]
 pub struct BinOp {
     op: BinOpType,
     lhs: Box<Expression>,
@@ -188,7 +188,7 @@ impl DivOp {
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, PartialEq, PartialOrd, Debug)]
 pub enum Expression {
     Literal(Literal),
     Identifier(Identifier),

@@ -2,7 +2,7 @@ use crate::qasm::AsQasmStr;
 
 use std::fmt::Debug;
 
-#[derive(Clone, Debug)]
+#[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub enum Primitive {
     Qubit,
     Bit,
@@ -32,7 +32,7 @@ impl AsQasmStr for Primitive {
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct Array {
     primitive: Primitive,
     dimensions: Vec<usize>,
@@ -63,7 +63,7 @@ impl AsQasmStr for Array {
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub enum Type {
     Primitive(Primitive),
     Array(Array),

@@ -2,7 +2,7 @@ use crate::qasm::gates::CustomGate;
 use crate::qasm::statements::*;
 use crate::qasm::AsQasmStr;
 
-#[derive(Clone, Debug)]
+#[derive(Clone, PartialEq, PartialOrd, Debug)]
 pub struct GateDeclaration {
     gate: CustomGate,
     body: Vec<Statement>,
@@ -33,7 +33,7 @@ impl AsQasmStr for GateDeclaration {
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, PartialEq, PartialOrd, Debug)]
 pub enum Block {
     GateDeclaration(GateDeclaration),
     Statement(Statement),
