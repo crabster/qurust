@@ -3,8 +3,6 @@ use crate::qasm::gates::Gate;
 use crate::qasm::types::Type;
 use crate::qasm::AsQasmStr;
 
-use std::rc::Rc;
-
 #[derive(Clone, Debug)]
 pub struct EmptyLine {}
 
@@ -130,44 +128,62 @@ impl AsQasmStr for GateApplication {
     }
 }
 
-mod private {
-    use super::*;
-
-    pub trait StatementTraitSealed {}
-
-    impl StatementTraitSealed for EmptyLine {}
-    impl StatementTraitSealed for Comment {}
-    impl StatementTraitSealed for VersionDeclaration {}
-    impl StatementTraitSealed for VariableDeclaration {}
-    impl StatementTraitSealed for VariableAssignment {}
-    impl StatementTraitSealed for GateApplication {}
-}
-
-pub trait StatementTrait: AsQasmStr + private::StatementTraitSealed {}
-
-impl StatementTrait for EmptyLine {}
-impl StatementTrait for Comment {}
-impl StatementTrait for VersionDeclaration {}
-impl StatementTrait for VariableDeclaration {}
-impl StatementTrait for VariableAssignment {}
-impl StatementTrait for GateApplication {}
-
 #[derive(Clone, Debug)]
-pub struct Statement {
-    stmt: Rc<dyn AsQasmStr>,
+pub enum Statement {
+    EmptyLine(EmptyLine),
+    Comment(Comment),
+    VersionDeclaration(VersionDeclaration),
+    VariableDeclaration(VariableDeclaration),
+    VariableAssignment(VariableAssignment),
+    GateApplication(GateApplication),
 }
 
 impl AsQasmStr for Statement {
     fn as_qasm_str(&self) -> String {
-        self.stmt.as_qasm_str()
+        match self {
+            Self::EmptyLine(empty_line) => empty_line.as_qasm_str(),
+            Self::Comment(comment) => comment.as_qasm_str(),
+            Self::VersionDeclaration(version_declaration) => version_declaration.as_qasm_str(),
+            Self::VariableDeclaration(variable_declaration) => variable_declaration.as_qasm_str(),
+            Self::VariableAssignment(variable_assignment) => variable_assignment.as_qasm_str(),
+            Self::GateApplication(gate_application) => gate_application.as_qasm_str(),
+        }
     }
 }
 
-impl<T: StatementTrait + 'static> From<T> for Statement {
-    fn from(stmt: T) -> Self {
-        Self {
-            stmt: Rc::new(stmt),
-        }
+impl From<EmptyLine> for Statement {
+    fn from(empty_line: EmptyLine) -> Self {
+        Statement::EmptyLine(empty_line)
+    }
+}
+
+impl From<Comment> for Statement {
+    fn from(comment: Comment) -> Statement {
+        Statement::Comment(comment)
+    }
+}
+
+impl From<VersionDeclaration> for Statement {
+    fn from(version_declaration: VersionDeclaration) -> Statement {
+        Statement::VersionDeclaration(version_declaration)
+    }
+}
+
+impl From<VariableDeclaration> for Statement {
+    fn from(variable_declaration: VariableDeclaration) -> Statement {
+        Statement::VariableDeclaration(variable_declaration)
+    }
+}
+
+impl From<VariableAssignment> for Statement {
+    fn from(variable_assignment: VariableAssignment) -> Statement {
+        Statement::VariableAssignment(variable_assignment)
+    }
+}
+
+impl From<GateApplication> for Statement {
+    fn from(gate_application: GateApplication) -> Statement {
+        Statement::GateApplication(gate_application)
     }
 }
 

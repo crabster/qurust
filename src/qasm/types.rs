@@ -1,7 +1,6 @@
 use crate::qasm::AsQasmStr;
 
 use std::fmt::Debug;
-use std::rc::Rc;
 
 #[derive(Clone, Debug)]
 pub enum Primitive {
@@ -64,34 +63,30 @@ impl AsQasmStr for Array {
     }
 }
 
-mod private {
-    use super::*;
-
-    pub trait TypeTraitSealed {}
-
-    impl TypeTraitSealed for Primitive {}
-    impl TypeTraitSealed for Array {}
-}
-
-pub trait TypeTrait: AsQasmStr + private::TypeTraitSealed {}
-
-impl TypeTrait for Primitive {}
-impl TypeTrait for Array {}
-
 #[derive(Clone, Debug)]
-pub struct Type {
-    type_: Rc<dyn TypeTrait>,
+pub enum Type {
+    Primitive(Primitive),
+    Array(Array),
 }
 
 impl AsQasmStr for Type {
     fn as_qasm_str(&self) -> String {
-        self.type_.as_qasm_str()
+        match self {
+            Type::Primitive(p) => p.as_qasm_str(),
+            Type::Array(a) => a.as_qasm_str(),
+        }
     }
 }
 
-impl<T: TypeTrait + 'static> From<T> for Type {
-    fn from(t: T) -> Type {
-        Type { type_: Rc::new(t) }
+impl From<Primitive> for Type {
+    fn from(t: Primitive) -> Type {
+        Type::Primitive(t)
+    }
+}
+
+impl From<Array> for Type {
+    fn from(t: Array) -> Type {
+        Type::Array(t)
     }
 }
 
