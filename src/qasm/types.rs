@@ -64,7 +64,16 @@ impl AsQasmStr for Array {
     }
 }
 
-trait TypeTrait: AsQasmStr {}
+mod private {
+    use super::*;
+
+    pub trait TypeTraitSealed {}
+
+    impl TypeTraitSealed for Primitive {}
+    impl TypeTraitSealed for Array {}
+}
+
+pub trait TypeTrait: AsQasmStr + private::TypeTraitSealed {}
 
 impl TypeTrait for Primitive {}
 impl TypeTrait for Array {}

@@ -187,7 +187,20 @@ impl DivOp {
     }
 }
 
-trait ExpressionTrait: AsQasmStr {}
+mod private {
+    use super::*;
+
+    pub trait ExpressionTraitSealed {}
+
+    impl ExpressionTraitSealed for Literal {}
+    impl ExpressionTraitSealed for Identifier {}
+    impl ExpressionTraitSealed for Array {}
+    impl ExpressionTraitSealed for ArrayAccess {}
+    impl ExpressionTraitSealed for Measurement {}
+    impl ExpressionTraitSealed for BinOp {}
+}
+
+pub trait ExpressionTrait: AsQasmStr + private::ExpressionTraitSealed {}
 
 impl ExpressionTrait for Literal {}
 impl ExpressionTrait for Identifier {}
