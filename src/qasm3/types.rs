@@ -1,3 +1,7 @@
+//! Structures and enums for QASM3 types representation.
+//!
+//! All types used in QASM3 programs are defined by the `Type` enum.
+
 use crate::qasm3::AsQasmStr;
 
 use std::fmt::Debug;

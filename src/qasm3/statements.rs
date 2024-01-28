@@ -1,3 +1,10 @@
+//! Structures and enums for QASM3 statements representation.
+//!
+//! Statements are single lines of QASM3 code. They are defined by the `Statement` enum.
+//! They are typically composed from expressions, defined by the `expressions::Expression` enum,
+//! and types, defined by the `types::Type` enum. Statements also define gate applications,
+//! which use the `gates::Gate` enum.
+
 use crate::qasm3::expressions::Expression;
 use crate::qasm3::gates::Gate;
 use crate::qasm3::types::Type;

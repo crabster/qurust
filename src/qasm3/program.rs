@@ -1,3 +1,7 @@
+//! Structures and enums for QASM3 programs representation.
+//!
+//! A `Program` is composed from blocks, defined by the `blocks::Block` enum.
+
 use crate::qasm3::blocks::Block;
 use crate::qasm3::statements::{EmptyLine, VersionDeclaration};
 use crate::qasm3::AsQasmStr;
