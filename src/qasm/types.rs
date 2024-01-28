@@ -39,6 +39,7 @@ pub struct Array {
 }
 
 impl Array {
+    #[allow(clippy::new_ret_no_self)]
     pub fn new<T: From<Array>>(primitive: Primitive, dimensions: Vec<usize>) -> T {
         Self {
             primitive,

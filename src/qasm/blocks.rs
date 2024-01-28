@@ -11,6 +11,7 @@ pub struct GateDeclaration {
 }
 
 impl GateDeclaration {
+    #[allow(clippy::new_ret_no_self)]
     pub fn new<T: From<GateDeclaration>>(gate: CustomGate, body: Vec<Statement>) -> T {
         Self { gate, body }.into()
     }
