@@ -1,6 +1,7 @@
 use crate::qasm::expressions::Expression;
 use crate::qasm::AsQasmStr;
 
+/// QASM3 U3 gate.
 #[derive(Clone, PartialEq, PartialOrd, Debug)]
 pub struct U3Gate {
     theta: Expression,
@@ -39,6 +40,7 @@ impl AsQasmStr for U3Gate {
     }
 }
 
+/// QASM3 gphase gate.
 #[derive(Clone, PartialEq, PartialOrd, Debug)]
 pub struct GPGate {
     delta: Expression,
@@ -57,6 +59,7 @@ impl AsQasmStr for GPGate {
     }
 }
 
+/// QASM3 custom gate.
 #[derive(Clone, PartialEq, PartialOrd, Debug)]
 pub struct CustomGate {
     name: String,
@@ -102,6 +105,7 @@ impl AsQasmStr for CustomGate {
     }
 }
 
+/// QASM3 gate.
 #[derive(Clone, PartialEq, PartialOrd, Debug)]
 pub enum Gate {
     U3(U3Gate),

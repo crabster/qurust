@@ -7,6 +7,7 @@ pub mod types;
 
 use std::fmt::Debug;
 
+/// Trait for types convertible to QASM3 string.
 pub trait AsQasmStr: Debug {
     fn as_qasm_str(&self) -> String;
 }

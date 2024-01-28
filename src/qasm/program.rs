@@ -4,6 +4,7 @@ use crate::qasm::AsQasmStr;
 
 const QASM_VERSION: &str = "3.0";
 
+/// A QASM3 program.
 #[derive(Clone, PartialEq, PartialOrd, Debug)]
 pub struct Program {
     blocks: Vec<Block>,

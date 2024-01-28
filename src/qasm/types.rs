@@ -2,6 +2,7 @@ use crate::qasm::AsQasmStr;
 
 use std::fmt::Debug;
 
+/// QASM3 primitive type.
 #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub enum Primitive {
     Qubit,
@@ -32,6 +33,7 @@ impl AsQasmStr for Primitive {
     }
 }
 
+/// QASM3 array type.
 #[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct Array {
     primitive: Primitive,
@@ -63,6 +65,7 @@ impl AsQasmStr for Array {
     }
 }
 
+/// QASM3 type.
 #[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub enum Type {
     Primitive(Primitive),

@@ -6,6 +6,7 @@ use crate::qasm::AsQasmStr;
 #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct EmptyLine {}
 
+/// QASM3 empty line statement.
 impl EmptyLine {
     #[allow(clippy::new_ret_no_self)]
     pub fn new<T: From<EmptyLine>>() -> T {
@@ -19,6 +20,7 @@ impl AsQasmStr for EmptyLine {
     }
 }
 
+/// QASM3 comment statement.
 #[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct Comment {
     comment: String,
@@ -37,6 +39,7 @@ impl AsQasmStr for Comment {
     }
 }
 
+/// QASM3 version declaration statement.
 #[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct VersionDeclaration {
     version: String,
@@ -55,6 +58,7 @@ impl AsQasmStr for VersionDeclaration {
     }
 }
 
+/// QASM3 variable declaration statement.
 #[derive(Clone, PartialEq, PartialOrd, Debug)]
 pub struct VariableDeclaration {
     type_: Type,
@@ -83,6 +87,7 @@ impl AsQasmStr for VariableDeclaration {
     }
 }
 
+/// QASM3 variable assignment statement.
 #[derive(Clone, PartialEq, PartialOrd, Debug)]
 pub struct VariableAssignment {
     left_expr: Expression,
@@ -110,6 +115,7 @@ impl AsQasmStr for VariableAssignment {
     }
 }
 
+/// QASM3 gate application statement.
 #[derive(Clone, PartialEq, PartialOrd, Debug)]
 pub struct GateApplication {
     gate: Gate,
@@ -128,6 +134,7 @@ impl AsQasmStr for GateApplication {
     }
 }
 
+/// QASM3 statement.
 #[derive(Clone, PartialEq, PartialOrd, Debug)]
 pub enum Statement {
     EmptyLine(EmptyLine),
