@@ -1,5 +1,6 @@
 use crate::qasm::AsQasmStr;
 
+/// QASM3 identifier expression.
 pub type Identifier = String;
 
 impl AsQasmStr for Identifier {
@@ -8,6 +9,7 @@ impl AsQasmStr for Identifier {
     }
 }
 
+/// QASM3 literal expression.
 #[derive(Copy, Clone, PartialEq, PartialOrd, Debug)]
 pub enum Literal {
     Bit(bool),
@@ -42,6 +44,7 @@ impl AsQasmStr for Literal {
     }
 }
 
+/// A QASM3 array expression.
 pub type Array = Vec<Expression>;
 
 impl AsQasmStr for Array {
@@ -56,6 +59,7 @@ impl AsQasmStr for Array {
     }
 }
 
+/// QASM3 array access expression.
 #[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct ArrayAccess {
     identifier: Identifier,
@@ -87,6 +91,7 @@ impl AsQasmStr for ArrayAccess {
     }
 }
 
+/// QASM3 measurement expression.
 #[derive(Clone, PartialEq, PartialOrd, Debug)]
 pub struct Measurement {
     expr: Box<Expression>,
@@ -106,6 +111,7 @@ impl AsQasmStr for Measurement {
     }
 }
 
+/// QASM3 binary operator type;
 #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 enum BinOpType {
     Plus,
@@ -125,6 +131,7 @@ impl AsQasmStr for BinOpType {
     }
 }
 
+/// QASM3 binary operation expression.
 #[derive(Clone, PartialEq, PartialOrd, Debug)]
 pub struct BinOp {
     op: BinOpType,
@@ -152,6 +159,7 @@ impl AsQasmStr for BinOp {
     }
 }
 
+/// QASM3 addition expression.
 pub struct PlusOp(BinOp);
 
 impl PlusOp {
@@ -161,6 +169,7 @@ impl PlusOp {
     }
 }
 
+/// QASM3 subtraction expression.
 pub struct MinusOp(BinOp);
 
 impl MinusOp {
@@ -170,6 +179,7 @@ impl MinusOp {
     }
 }
 
+/// QASM3 multiplication expression.
 pub struct TimesOp(BinOp);
 
 impl TimesOp {
@@ -179,6 +189,7 @@ impl TimesOp {
     }
 }
 
+/// QASM3 division expression.
 pub struct DivOp(BinOp);
 
 impl DivOp {
@@ -188,6 +199,7 @@ impl DivOp {
     }
 }
 
+/// QASM3 expression.
 #[derive(Clone, PartialEq, PartialOrd, Debug)]
 pub enum Expression {
     Literal(Literal),

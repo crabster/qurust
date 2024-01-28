@@ -2,6 +2,7 @@ use crate::qasm::gates::CustomGate;
 use crate::qasm::statements::*;
 use crate::qasm::AsQasmStr;
 
+/// QASM3 gate declaration block.
 #[derive(Clone, PartialEq, PartialOrd, Debug)]
 pub struct GateDeclaration {
     gate: CustomGate,
@@ -33,6 +34,7 @@ impl AsQasmStr for GateDeclaration {
     }
 }
 
+/// QASM3 block.
 #[derive(Clone, PartialEq, PartialOrd, Debug)]
 pub enum Block {
     GateDeclaration(GateDeclaration),
