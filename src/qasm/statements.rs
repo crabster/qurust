@@ -5,7 +5,7 @@ use crate::qasm::AsQasmStr;
 
 use std::rc::Rc;
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct EmptyLine {}
 
 impl EmptyLine {
@@ -21,7 +21,7 @@ impl AsQasmStr for EmptyLine {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Comment {
     comment: String,
 }
@@ -39,7 +39,7 @@ impl AsQasmStr for Comment {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct VersionDeclaration {
     version: String,
 }
@@ -57,7 +57,7 @@ impl AsQasmStr for VersionDeclaration {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct VariableDeclaration {
     type_: Type,
     name: String,
@@ -85,7 +85,7 @@ impl AsQasmStr for VariableDeclaration {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct VariableAssignment {
     left_expr: Expression,
     right_expr: Expression,
@@ -112,7 +112,7 @@ impl AsQasmStr for VariableAssignment {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct GateApplication {
     gate: Gate,
 }
@@ -130,7 +130,7 @@ impl AsQasmStr for GateApplication {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Statement {
     stmt: Rc<dyn AsQasmStr>,
 }

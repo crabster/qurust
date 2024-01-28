@@ -1,8 +1,9 @@
 use crate::qasm::AsQasmStr;
 
+use std::fmt::Debug;
 use std::rc::Rc;
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum Primitive {
     Qubit,
     Bit,
@@ -32,7 +33,7 @@ impl AsQasmStr for Primitive {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Array {
     primitive: Primitive,
     dimensions: Vec<usize>,
@@ -68,7 +69,7 @@ trait TypeTrait: AsQasmStr {}
 impl TypeTrait for Primitive {}
 impl TypeTrait for Array {}
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Type {
     type_: Rc<dyn TypeTrait>,
 }

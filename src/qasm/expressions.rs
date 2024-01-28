@@ -10,7 +10,7 @@ impl AsQasmStr for Identifier {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum Literal {
     Bit(bool),
     Bool(bool),
@@ -58,7 +58,7 @@ impl AsQasmStr for Array {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct ArrayAccess {
     identifier: Identifier,
     indices: Vec<isize>,
@@ -89,7 +89,7 @@ impl AsQasmStr for ArrayAccess {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Measurement {
     expression: Expression,
 }
@@ -107,7 +107,7 @@ impl AsQasmStr for Measurement {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 enum BinOpType {
     Plus,
     Minus,
@@ -126,7 +126,7 @@ impl AsQasmStr for BinOpType {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct BinOp {
     op: BinOpType,
     lhs: Expression,
@@ -196,16 +196,9 @@ impl ExpressionTrait for ArrayAccess {}
 impl ExpressionTrait for Measurement {}
 impl ExpressionTrait for BinOp {}
 
+#[derive(Clone, Debug)]
 pub struct Expression {
     expression: Rc<dyn ExpressionTrait>,
-}
-
-impl Clone for Expression {
-    fn clone(&self) -> Self {
-        Self {
-            expression: self.expression.clone(),
-        }
-    }
 }
 
 impl AsQasmStr for Expression {

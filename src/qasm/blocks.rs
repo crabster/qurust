@@ -4,7 +4,7 @@ use crate::qasm::AsQasmStr;
 
 use std::rc::Rc;
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct GateDeclaration {
     gate: CustomGate,
     body: Vec<Statement>,
@@ -35,7 +35,7 @@ impl AsQasmStr for GateDeclaration {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Block {
     block: Rc<dyn BlockTrait>,
 }
