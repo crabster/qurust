@@ -104,16 +104,26 @@ impl AsQasmStr for CustomGate {
     }
 }
 
-#[derive(Clone, Debug)]
-pub struct Gate {
-    gate: Rc<dyn GateTrait>,
+mod private {
+    use super::*;
+
+    pub trait GateTraitSealed {}
+
+    impl GateTraitSealed for U3Gate {}
+    impl GateTraitSealed for GPGate {}
+    impl GateTraitSealed for CustomGate {}
 }
 
-trait GateTrait: AsQasmStr {}
+pub trait GateTrait: AsQasmStr + private::GateTraitSealed {}
 
 impl GateTrait for U3Gate {}
 impl GateTrait for GPGate {}
 impl GateTrait for CustomGate {}
+
+#[derive(Clone, Debug)]
+pub struct Gate {
+    gate: Rc<dyn GateTrait>,
+}
 
 impl AsQasmStr for Gate {
     fn as_qasm_str(&self) -> String {

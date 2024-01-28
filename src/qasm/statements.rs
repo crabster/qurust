@@ -130,12 +130,20 @@ impl AsQasmStr for GateApplication {
     }
 }
 
-#[derive(Clone, Debug)]
-pub struct Statement {
-    stmt: Rc<dyn AsQasmStr>,
+mod private {
+    use super::*;
+
+    pub trait StatementTraitSealed {}
+
+    impl StatementTraitSealed for EmptyLine {}
+    impl StatementTraitSealed for Comment {}
+    impl StatementTraitSealed for VersionDeclaration {}
+    impl StatementTraitSealed for VariableDeclaration {}
+    impl StatementTraitSealed for VariableAssignment {}
+    impl StatementTraitSealed for GateApplication {}
 }
 
-pub(crate) trait StatementTrait: AsQasmStr {}
+pub trait StatementTrait: AsQasmStr + private::StatementTraitSealed {}
 
 impl StatementTrait for EmptyLine {}
 impl StatementTrait for Comment {}
@@ -143,6 +151,11 @@ impl StatementTrait for VersionDeclaration {}
 impl StatementTrait for VariableDeclaration {}
 impl StatementTrait for VariableAssignment {}
 impl StatementTrait for GateApplication {}
+
+#[derive(Clone, Debug)]
+pub struct Statement {
+    stmt: Rc<dyn AsQasmStr>,
+}
 
 impl AsQasmStr for Statement {
     fn as_qasm_str(&self) -> String {

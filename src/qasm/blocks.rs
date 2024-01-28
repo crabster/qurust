@@ -35,15 +35,24 @@ impl AsQasmStr for GateDeclaration {
     }
 }
 
+mod private {
+    use super::*;
+
+    pub trait BlockTraitSealed {}
+
+    impl BlockTraitSealed for GateDeclaration {}
+    impl<T: StatementTrait> BlockTraitSealed for T {}
+}
+
+pub trait BlockTrait: AsQasmStr + private::BlockTraitSealed {}
+
+impl BlockTrait for GateDeclaration {}
+impl<T: StatementTrait> BlockTrait for T {}
+
 #[derive(Clone, Debug)]
 pub struct Block {
     block: Rc<dyn BlockTrait>,
 }
-
-trait BlockTrait: AsQasmStr {}
-
-impl BlockTrait for GateDeclaration {}
-impl<T: StatementTrait> BlockTrait for T {}
 
 impl AsQasmStr for Block {
     fn as_qasm_str(&self) -> String {
