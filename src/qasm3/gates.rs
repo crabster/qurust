@@ -1,5 +1,5 @@
-use crate::qasm::expressions::Expression;
-use crate::qasm::AsQasmStr;
+use crate::qasm3::expressions::Expression;
+use crate::qasm3::AsQasmStr;
 
 /// QASM3 U3 gate.
 #[derive(Clone, PartialEq, PartialOrd, Debug)]
@@ -29,13 +29,13 @@ impl U3Gate {
 }
 
 impl AsQasmStr for U3Gate {
-    fn as_qasm_str(&self) -> String {
+    fn as_qasm3_str(&self) -> String {
         format!(
             "U({}, {}, {}) {}",
-            self.theta.as_qasm_str(),
-            self.phi.as_qasm_str(),
-            self.lambda.as_qasm_str(),
-            self.qubit.as_qasm_str()
+            self.theta.as_qasm3_str(),
+            self.phi.as_qasm3_str(),
+            self.lambda.as_qasm3_str(),
+            self.qubit.as_qasm3_str()
         )
     }
 }
@@ -54,8 +54,8 @@ impl GPGate {
 }
 
 impl AsQasmStr for GPGate {
-    fn as_qasm_str(&self) -> String {
-        format!("gphase({})", self.delta.as_qasm_str())
+    fn as_qasm3_str(&self) -> String {
+        format!("gphase({})", self.delta.as_qasm3_str())
     }
 }
 
@@ -79,17 +79,17 @@ impl CustomGate {
 }
 
 impl AsQasmStr for CustomGate {
-    fn as_qasm_str(&self) -> String {
+    fn as_qasm3_str(&self) -> String {
         let params = self
             .params
             .iter()
-            .map(|param| param.as_qasm_str())
+            .map(|param| param.as_qasm3_str())
             .collect::<Vec<String>>()
             .join(", ");
         let args = self
             .args
             .iter()
-            .map(|arg| arg.as_qasm_str())
+            .map(|arg| arg.as_qasm3_str())
             .collect::<Vec<String>>()
             .join(" ");
 
@@ -114,11 +114,11 @@ pub enum Gate {
 }
 
 impl AsQasmStr for Gate {
-    fn as_qasm_str(&self) -> String {
+    fn as_qasm3_str(&self) -> String {
         match self {
-            Gate::U3(gate) => gate.as_qasm_str(),
-            Gate::GP(gate) => gate.as_qasm_str(),
-            Gate::Custom(gate) => gate.as_qasm_str(),
+            Gate::U3(gate) => gate.as_qasm3_str(),
+            Gate::GP(gate) => gate.as_qasm3_str(),
+            Gate::Custom(gate) => gate.as_qasm3_str(),
         }
     }
 }
@@ -146,26 +146,26 @@ mod tests {
     use super::*;
 
     #[test]
-    fn u3_gate_as_qasm_str() {
+    fn u3_gate_as_qasm3_str() {
         let gate = U3Gate::new::<Gate>(
             "t".to_string().into(),
             "p".to_string().into(),
             "l".to_string().into(),
             "q".to_string().into(),
         );
-        assert_eq!(gate.as_qasm_str(), "U(t, p, l) q".to_string());
+        assert_eq!(gate.as_qasm3_str(), "U(t, p, l) q".to_string());
     }
 
     #[test]
-    fn gp_gate_as_qasm_str() {
+    fn gp_gate_as_qasm3_str() {
         let gate = GPGate::new::<Gate>("d".to_string().into());
-        assert_eq!(gate.as_qasm_str(), "gphase(d)".to_string());
+        assert_eq!(gate.as_qasm3_str(), "gphase(d)".to_string());
     }
 
     #[test]
-    fn custom_gate_as_qasm_str() {
+    fn custom_gate_as_qasm3_str() {
         assert_eq!(
-            CustomGate::new::<Gate>("name".to_string(), vec![], vec![],).as_qasm_str(),
+            CustomGate::new::<Gate>("name".to_string(), vec![], vec![],).as_qasm3_str(),
             "name".to_string()
         );
         assert_eq!(
@@ -174,7 +174,7 @@ mod tests {
                 vec!["l1".to_string().into(), "l2".to_string().into()],
                 vec![],
             )
-            .as_qasm_str(),
+            .as_qasm3_str(),
             "name(l1, l2)".to_string()
         );
         assert_eq!(
@@ -183,7 +183,7 @@ mod tests {
                 vec![],
                 vec!["q1".to_string().into(), "q2".to_string().into()],
             )
-            .as_qasm_str(),
+            .as_qasm3_str(),
             "name q1 q2".to_string()
         );
         assert_eq!(
@@ -192,7 +192,7 @@ mod tests {
                 vec!["l1".to_string().into(), "l2".to_string().into()],
                 vec!["q1".to_string().into(), "q2".to_string().into()],
             )
-            .as_qasm_str(),
+            .as_qasm3_str(),
             "name(l1, l2) q1 q2".to_string()
         );
     }

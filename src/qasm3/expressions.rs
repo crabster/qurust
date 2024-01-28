@@ -1,10 +1,10 @@
-use crate::qasm::AsQasmStr;
+use crate::qasm3::AsQasmStr;
 
 /// QASM3 identifier expression.
 pub type Identifier = String;
 
 impl AsQasmStr for Identifier {
-    fn as_qasm_str(&self) -> String {
+    fn as_qasm3_str(&self) -> String {
         self.clone()
     }
 }
@@ -22,7 +22,7 @@ pub enum Literal {
 }
 
 impl AsQasmStr for Literal {
-    fn as_qasm_str(&self) -> String {
+    fn as_qasm3_str(&self) -> String {
         match self {
             Literal::Bit(lit) => {
                 if *lit {
@@ -48,11 +48,11 @@ impl AsQasmStr for Literal {
 pub type Array = Vec<Expression>;
 
 impl AsQasmStr for Array {
-    fn as_qasm_str(&self) -> String {
+    fn as_qasm3_str(&self) -> String {
         format!(
             "{{{}}}",
             self.iter()
-                .map(|e| e.as_qasm_str())
+                .map(|e| e.as_qasm3_str())
                 .collect::<Vec<String>>()
                 .join(", ")
         )
@@ -78,7 +78,7 @@ impl ArrayAccess {
 }
 
 impl AsQasmStr for ArrayAccess {
-    fn as_qasm_str(&self) -> String {
+    fn as_qasm3_str(&self) -> String {
         format!(
             "{}[{}]",
             self.identifier,
@@ -106,8 +106,8 @@ impl Measurement {
 }
 
 impl AsQasmStr for Measurement {
-    fn as_qasm_str(&self) -> String {
-        format!("measure {}", self.expr.as_qasm_str())
+    fn as_qasm3_str(&self) -> String {
+        format!("measure {}", self.expr.as_qasm3_str())
     }
 }
 
@@ -121,7 +121,7 @@ enum BinOpType {
 }
 
 impl AsQasmStr for BinOpType {
-    fn as_qasm_str(&self) -> String {
+    fn as_qasm3_str(&self) -> String {
         match self {
             BinOpType::Plus => "+".to_string(),
             BinOpType::Minus => "-".to_string(),
@@ -149,12 +149,12 @@ impl BinOp {
 }
 
 impl AsQasmStr for BinOp {
-    fn as_qasm_str(&self) -> String {
+    fn as_qasm3_str(&self) -> String {
         format!(
             "{} {} {}",
-            self.lhs.as_qasm_str(),
-            self.op.as_qasm_str(),
-            self.rhs.as_qasm_str()
+            self.lhs.as_qasm3_str(),
+            self.op.as_qasm3_str(),
+            self.rhs.as_qasm3_str()
         )
     }
 }
@@ -211,14 +211,14 @@ pub enum Expression {
 }
 
 impl AsQasmStr for Expression {
-    fn as_qasm_str(&self) -> String {
+    fn as_qasm3_str(&self) -> String {
         match self {
-            Expression::Literal(lit) => lit.as_qasm_str(),
-            Expression::Identifier(id) => id.as_qasm_str(),
-            Expression::Array(array) => array.as_qasm_str(),
-            Expression::ArrayAccess(array_access) => array_access.as_qasm_str(),
-            Expression::Measurement(measurement) => measurement.as_qasm_str(),
-            Expression::BinOp(bin_op) => bin_op.as_qasm_str(),
+            Expression::Literal(lit) => lit.as_qasm3_str(),
+            Expression::Identifier(id) => id.as_qasm3_str(),
+            Expression::Array(array) => array.as_qasm3_str(),
+            Expression::ArrayAccess(array_access) => array_access.as_qasm3_str(),
+            Expression::Measurement(measurement) => measurement.as_qasm3_str(),
+            Expression::BinOp(bin_op) => bin_op.as_qasm3_str(),
         }
     }
 }
@@ -264,70 +264,70 @@ mod tests {
     use super::*;
 
     #[test]
-    fn identifier_as_qasm_str() {
-        assert_eq!(Identifier::from("a").as_qasm_str(), "a");
+    fn identifier_as_qasm3_str() {
+        assert_eq!(Identifier::from("a").as_qasm3_str(), "a");
     }
 
     #[test]
-    fn literal_as_qasm_str() {
-        assert_eq!(Literal::Bit(true).as_qasm_str(), "1");
-        assert_eq!(Literal::Bit(false).as_qasm_str(), "0");
-        assert_eq!(Literal::Bool(true).as_qasm_str(), "true");
-        assert_eq!(Literal::Bool(false).as_qasm_str(), "false");
-        assert_eq!(Literal::Int(1).as_qasm_str(), "1");
-        assert_eq!(Literal::Uint(1).as_qasm_str(), "1");
-        assert_eq!(Literal::Float(1.0).as_qasm_str(), "1");
-        assert_eq!(Literal::Pi.as_qasm_str(), "pi");
-        assert_eq!(Literal::Complex((1.0, 1.0)).as_qasm_str(), "1 + 1im");
-        assert_eq!(Literal::Complex((1.0, -1.0)).as_qasm_str(), "1 - 1im");
+    fn literal_as_qasm3_str() {
+        assert_eq!(Literal::Bit(true).as_qasm3_str(), "1");
+        assert_eq!(Literal::Bit(false).as_qasm3_str(), "0");
+        assert_eq!(Literal::Bool(true).as_qasm3_str(), "true");
+        assert_eq!(Literal::Bool(false).as_qasm3_str(), "false");
+        assert_eq!(Literal::Int(1).as_qasm3_str(), "1");
+        assert_eq!(Literal::Uint(1).as_qasm3_str(), "1");
+        assert_eq!(Literal::Float(1.0).as_qasm3_str(), "1");
+        assert_eq!(Literal::Pi.as_qasm3_str(), "pi");
+        assert_eq!(Literal::Complex((1.0, 1.0)).as_qasm3_str(), "1 + 1im");
+        assert_eq!(Literal::Complex((1.0, -1.0)).as_qasm3_str(), "1 - 1im");
     }
 
     #[test]
-    fn array_as_qasm_str() {
-        assert_eq!(Array::new().as_qasm_str(), "{}");
-        assert_eq!(Array::from([Literal::Uint(1).into()]).as_qasm_str(), "{1}");
+    fn array_as_qasm3_str() {
+        assert_eq!(Array::new().as_qasm3_str(), "{}");
+        assert_eq!(Array::from([Literal::Uint(1).into()]).as_qasm3_str(), "{1}");
         assert_eq!(
-            Array::from([Literal::Uint(2).into(), Literal::Uint(3).into()]).as_qasm_str(),
+            Array::from([Literal::Uint(2).into(), Literal::Uint(3).into()]).as_qasm3_str(),
             "{2, 3}"
         );
     }
 
     #[test]
-    fn array_access_as_qasm_str() {
+    fn array_access_as_qasm3_str() {
         assert_eq!(
-            ArrayAccess::new::<Expression>("a".to_string(), vec![1]).as_qasm_str(),
+            ArrayAccess::new::<Expression>("a".to_string(), vec![1]).as_qasm3_str(),
             "a[1]"
         );
         assert_eq!(
-            ArrayAccess::new::<Expression>("a".to_string(), vec![1, 2]).as_qasm_str(),
+            ArrayAccess::new::<Expression>("a".to_string(), vec![1, 2]).as_qasm3_str(),
             "a[1, 2]"
         );
     }
 
     #[test]
-    fn measurement_as_qasm_str() {
+    fn measurement_as_qasm3_str() {
         assert_eq!(
-            Measurement::new::<Measurement>("a".to_string().into()).as_qasm_str(),
+            Measurement::new::<Measurement>("a".to_string().into()).as_qasm3_str(),
             "measure a"
         );
     }
 
     #[test]
-    fn bin_op_as_qasm_str() {
+    fn bin_op_as_qasm3_str() {
         assert_eq!(
-            PlusOp::new::<BinOp>("a".to_string().into(), "b".to_string().into()).as_qasm_str(),
+            PlusOp::new::<BinOp>("a".to_string().into(), "b".to_string().into()).as_qasm3_str(),
             "a + b"
         );
         assert_eq!(
-            MinusOp::new::<BinOp>("a".to_string().into(), "b".to_string().into()).as_qasm_str(),
+            MinusOp::new::<BinOp>("a".to_string().into(), "b".to_string().into()).as_qasm3_str(),
             "a - b"
         );
         assert_eq!(
-            TimesOp::new::<BinOp>("a".to_string().into(), "b".to_string().into()).as_qasm_str(),
+            TimesOp::new::<BinOp>("a".to_string().into(), "b".to_string().into()).as_qasm3_str(),
             "a * b"
         );
         assert_eq!(
-            DivOp::new::<BinOp>("a".to_string().into(), "b".to_string().into()).as_qasm_str(),
+            DivOp::new::<BinOp>("a".to_string().into(), "b".to_string().into()).as_qasm3_str(),
             "a / b"
         );
     }
