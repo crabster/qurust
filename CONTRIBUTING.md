@@ -1,4 +1,4 @@
-#Contributing
+# Contributing
 
 ## Pull requests
 If you miss some feature or find a bug, please feel free to open a PR with description of the said problem.
