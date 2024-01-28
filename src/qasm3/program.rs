@@ -1,6 +1,6 @@
-use crate::qasm::blocks::Block;
-use crate::qasm::statements::{EmptyLine, VersionDeclaration};
-use crate::qasm::AsQasmStr;
+use crate::qasm3::blocks::Block;
+use crate::qasm3::statements::{EmptyLine, VersionDeclaration};
+use crate::qasm3::AsQasmStr;
 
 const QASM_VERSION: &str = "3.0";
 
@@ -23,10 +23,10 @@ impl Program {
 }
 
 impl AsQasmStr for Program {
-    fn as_qasm_str(&self) -> String {
+    fn as_qasm3_str(&self) -> String {
         self.blocks
             .iter()
-            .map(|block| block.as_qasm_str())
+            .map(|block| block.as_qasm3_str())
             .collect::<Vec<String>>()
             .join("\n")
     }
@@ -35,13 +35,13 @@ impl AsQasmStr for Program {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::qasm::statements::Comment;
+    use crate::qasm3::statements::Comment;
 
     #[test]
     fn test_program() {
-        assert_eq!(Program::new(vec![]).as_qasm_str(), "OPENQASM 3.0;\n");
+        assert_eq!(Program::new(vec![]).as_qasm3_str(), "OPENQASM 3.0;\n");
         assert_eq!(
-            Program::new(vec![Comment::new("comment".to_string())]).as_qasm_str(),
+            Program::new(vec![Comment::new("comment".to_string())]).as_qasm3_str(),
             "OPENQASM 3.0;\n\n// comment"
         );
     }

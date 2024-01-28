@@ -1,4 +1,4 @@
-use crate::qasm::AsQasmStr;
+use crate::qasm3::AsQasmStr;
 
 use std::fmt::Debug;
 
@@ -16,7 +16,7 @@ pub enum Primitive {
 }
 
 impl AsQasmStr for Primitive {
-    fn as_qasm_str(&self) -> String {
+    fn as_qasm3_str(&self) -> String {
         match self {
             Primitive::Qubit => "qubit".to_string(),
             Primitive::Bit => "bit".to_string(),
@@ -52,10 +52,10 @@ impl Array {
 }
 
 impl AsQasmStr for Array {
-    fn as_qasm_str(&self) -> String {
+    fn as_qasm3_str(&self) -> String {
         format!(
             "{}[{}]",
-            self.primitive.as_qasm_str(),
+            self.primitive.as_qasm3_str(),
             self.dimensions
                 .iter()
                 .map(|d| d.to_string())
@@ -73,10 +73,10 @@ pub enum Type {
 }
 
 impl AsQasmStr for Type {
-    fn as_qasm_str(&self) -> String {
+    fn as_qasm3_str(&self) -> String {
         match self {
-            Type::Primitive(p) => p.as_qasm_str(),
-            Type::Array(a) => a.as_qasm_str(),
+            Type::Primitive(p) => p.as_qasm3_str(),
+            Type::Array(a) => a.as_qasm3_str(),
         }
     }
 }
@@ -98,26 +98,26 @@ mod tests {
     use super::*;
 
     #[test]
-    fn primitive_as_qasm_str() {
-        assert_eq!(Primitive::Qubit.as_qasm_str(), "qubit");
-        assert_eq!(Primitive::Bit.as_qasm_str(), "bit");
-        assert_eq!(Primitive::Bool.as_qasm_str(), "bool");
-        assert_eq!(Primitive::Int(1).as_qasm_str(), "int[1]");
-        assert_eq!(Primitive::Uint(1).as_qasm_str(), "uint[1]");
-        assert_eq!(Primitive::Float(1).as_qasm_str(), "float[1]");
-        assert_eq!(Primitive::Angle(1).as_qasm_str(), "angle[1]");
-        assert_eq!(Primitive::Complex(Some(1)).as_qasm_str(), "complex[1]");
-        assert_eq!(Primitive::Complex(None).as_qasm_str(), "complex");
+    fn primitive_as_qasm3_str() {
+        assert_eq!(Primitive::Qubit.as_qasm3_str(), "qubit");
+        assert_eq!(Primitive::Bit.as_qasm3_str(), "bit");
+        assert_eq!(Primitive::Bool.as_qasm3_str(), "bool");
+        assert_eq!(Primitive::Int(1).as_qasm3_str(), "int[1]");
+        assert_eq!(Primitive::Uint(1).as_qasm3_str(), "uint[1]");
+        assert_eq!(Primitive::Float(1).as_qasm3_str(), "float[1]");
+        assert_eq!(Primitive::Angle(1).as_qasm3_str(), "angle[1]");
+        assert_eq!(Primitive::Complex(Some(1)).as_qasm3_str(), "complex[1]");
+        assert_eq!(Primitive::Complex(None).as_qasm3_str(), "complex");
     }
 
     #[test]
-    fn array_as_qasm_str() {
+    fn array_as_qasm3_str() {
         assert_eq!(
-            Array::new::<Type>(Primitive::Qubit.into(), vec![1]).as_qasm_str(),
+            Array::new::<Type>(Primitive::Qubit.into(), vec![1]).as_qasm3_str(),
             "qubit[1]"
         );
         assert_eq!(
-            Array::new::<Type>(Primitive::Bit.into(), vec![2, 3]).as_qasm_str(),
+            Array::new::<Type>(Primitive::Bit.into(), vec![2, 3]).as_qasm3_str(),
             "bit[2, 3]"
         );
     }

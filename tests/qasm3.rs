@@ -1,4 +1,4 @@
-use qurust::qasm::{expressions::*, types::*, *};
+use qurust::qasm3::{expressions::*, types::*, *};
 
 #[test]
 fn random_number_circuit() {
@@ -45,5 +45,5 @@ bit c = measure q;
         ),
     ]);
 
-    assert_eq!(program.as_qasm_str(), expected.trim());
+    assert_eq!(program.as_qasm3_str(), expected.trim());
 }

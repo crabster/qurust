@@ -1,6 +1,6 @@
-use crate::qasm::gates::CustomGate;
-use crate::qasm::statements::*;
-use crate::qasm::AsQasmStr;
+use crate::qasm3::gates::CustomGate;
+use crate::qasm3::statements::*;
+use crate::qasm3::AsQasmStr;
 
 /// QASM3 gate declaration block.
 #[derive(Clone, PartialEq, PartialOrd, Debug)]
@@ -17,12 +17,12 @@ impl GateDeclaration {
 }
 
 impl AsQasmStr for GateDeclaration {
-    fn as_qasm_str(&self) -> String {
+    fn as_qasm3_str(&self) -> String {
         let body = self
             .body
             .iter()
             .map(|stmt| {
-                let mut stmt_str = stmt.as_qasm_str();
+                let mut stmt_str = stmt.as_qasm3_str();
                 if !stmt_str.is_empty() {
                     stmt_str = format!("    {}", stmt_str)
                 }
@@ -30,7 +30,7 @@ impl AsQasmStr for GateDeclaration {
             })
             .collect::<Vec<String>>()
             .join("\n");
-        format!("gate {} {{\n{}\n}}", self.gate.as_qasm_str(), body)
+        format!("gate {} {{\n{}\n}}", self.gate.as_qasm3_str(), body)
     }
 }
 
@@ -42,10 +42,10 @@ pub enum Block {
 }
 
 impl AsQasmStr for Block {
-    fn as_qasm_str(&self) -> String {
+    fn as_qasm3_str(&self) -> String {
         match self {
-            Block::GateDeclaration(gate) => gate.as_qasm_str(),
-            Block::Statement(stmt) => stmt.as_qasm_str(),
+            Block::GateDeclaration(gate) => gate.as_qasm3_str(),
+            Block::Statement(stmt) => stmt.as_qasm3_str(),
         }
     }
 }
@@ -95,7 +95,7 @@ impl From<GateApplication> for Block {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::qasm::statements::{Comment, EmptyLine, Statement};
+    use crate::qasm3::statements::{Comment, EmptyLine, Statement};
 
     #[test]
     fn test_gate_declaration() {
@@ -106,7 +106,7 @@ mod tests {
             EmptyLine::new::<Statement>(),
         ];
         assert_eq!(
-            GateDeclaration::new::<Block>(gate, body).as_qasm_str(),
+            GateDeclaration::new::<Block>(gate, body).as_qasm3_str(),
             "gate foo {\n\n    // comment\n\n}"
         );
     }

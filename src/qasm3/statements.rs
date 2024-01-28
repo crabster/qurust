@@ -1,7 +1,7 @@
-use crate::qasm::expressions::Expression;
-use crate::qasm::gates::Gate;
-use crate::qasm::types::Type;
-use crate::qasm::AsQasmStr;
+use crate::qasm3::expressions::Expression;
+use crate::qasm3::gates::Gate;
+use crate::qasm3::types::Type;
+use crate::qasm3::AsQasmStr;
 
 #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct EmptyLine {}
@@ -15,7 +15,7 @@ impl EmptyLine {
 }
 
 impl AsQasmStr for EmptyLine {
-    fn as_qasm_str(&self) -> String {
+    fn as_qasm3_str(&self) -> String {
         "".to_string()
     }
 }
@@ -34,7 +34,7 @@ impl Comment {
 }
 
 impl AsQasmStr for Comment {
-    fn as_qasm_str(&self) -> String {
+    fn as_qasm3_str(&self) -> String {
         format!("// {}", self.comment)
     }
 }
@@ -53,7 +53,7 @@ impl VersionDeclaration {
 }
 
 impl AsQasmStr for VersionDeclaration {
-    fn as_qasm_str(&self) -> String {
+    fn as_qasm3_str(&self) -> String {
         format!("OPENQASM {};", self.version)
     }
 }
@@ -78,10 +78,10 @@ impl VariableDeclaration {
 }
 
 impl AsQasmStr for VariableDeclaration {
-    fn as_qasm_str(&self) -> String {
-        let var_decl = format!("{} {}", self.type_.as_qasm_str(), self.name);
+    fn as_qasm3_str(&self) -> String {
+        let var_decl = format!("{} {}", self.type_.as_qasm3_str(), self.name);
         match &self.expr {
-            Some(expr) => format!("{} = {};", var_decl, expr.as_qasm_str()),
+            Some(expr) => format!("{} = {};", var_decl, expr.as_qasm3_str()),
             None => format!("{};", var_decl),
         }
     }
@@ -106,11 +106,11 @@ impl VariableAssignment {
 }
 
 impl AsQasmStr for VariableAssignment {
-    fn as_qasm_str(&self) -> String {
+    fn as_qasm3_str(&self) -> String {
         format!(
             "{} = {};",
-            self.left_expr.as_qasm_str(),
-            self.right_expr.as_qasm_str()
+            self.left_expr.as_qasm3_str(),
+            self.right_expr.as_qasm3_str()
         )
     }
 }
@@ -129,8 +129,8 @@ impl GateApplication {
 }
 
 impl AsQasmStr for GateApplication {
-    fn as_qasm_str(&self) -> String {
-        format!("{};", self.gate.as_qasm_str())
+    fn as_qasm3_str(&self) -> String {
+        format!("{};", self.gate.as_qasm3_str())
     }
 }
 
@@ -146,14 +146,14 @@ pub enum Statement {
 }
 
 impl AsQasmStr for Statement {
-    fn as_qasm_str(&self) -> String {
+    fn as_qasm3_str(&self) -> String {
         match self {
-            Self::EmptyLine(empty_line) => empty_line.as_qasm_str(),
-            Self::Comment(comment) => comment.as_qasm_str(),
-            Self::VersionDeclaration(version_declaration) => version_declaration.as_qasm_str(),
-            Self::VariableDeclaration(variable_declaration) => variable_declaration.as_qasm_str(),
-            Self::VariableAssignment(variable_assignment) => variable_assignment.as_qasm_str(),
-            Self::GateApplication(gate_application) => gate_application.as_qasm_str(),
+            Self::EmptyLine(empty_line) => empty_line.as_qasm3_str(),
+            Self::Comment(comment) => comment.as_qasm3_str(),
+            Self::VersionDeclaration(version_declaration) => version_declaration.as_qasm3_str(),
+            Self::VariableDeclaration(variable_declaration) => variable_declaration.as_qasm3_str(),
+            Self::VariableAssignment(variable_assignment) => variable_assignment.as_qasm3_str(),
+            Self::GateApplication(gate_application) => gate_application.as_qasm3_str(),
         }
     }
 }
@@ -197,36 +197,36 @@ impl From<GateApplication> for Statement {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::qasm::expressions::Literal;
-    use crate::qasm::gates::CustomGate;
-    use crate::qasm::types::Primitive;
+    use crate::qasm3::expressions::Literal;
+    use crate::qasm3::gates::CustomGate;
+    use crate::qasm3::types::Primitive;
 
     #[test]
-    fn empty_line_as_qasm_str() {
-        assert_eq!(EmptyLine::new::<Statement>().as_qasm_str(), "");
+    fn empty_line_as_qasm3_str() {
+        assert_eq!(EmptyLine::new::<Statement>().as_qasm3_str(), "");
     }
 
     #[test]
-    fn comment_as_qasm_str() {
+    fn comment_as_qasm3_str() {
         assert_eq!(
-            Comment::new::<Statement>("comment".to_string()).as_qasm_str(),
+            Comment::new::<Statement>("comment".to_string()).as_qasm3_str(),
             "// comment"
         );
     }
 
     #[test]
-    fn version_declaration_as_qasm_str() {
+    fn version_declaration_as_qasm3_str() {
         assert_eq!(
-            VersionDeclaration::new::<Statement>("3.0".to_string()).as_qasm_str(),
+            VersionDeclaration::new::<Statement>("3.0".to_string()).as_qasm3_str(),
             "OPENQASM 3.0;"
         );
     }
 
     #[test]
-    fn variable_declaration_as_qasm_str() {
+    fn variable_declaration_as_qasm3_str() {
         assert_eq!(
             VariableDeclaration::new::<Statement>(Primitive::Bit.into(), "a".to_string(), None)
-                .as_qasm_str(),
+                .as_qasm3_str(),
             "bit a;"
         );
         assert_eq!(
@@ -235,29 +235,29 @@ mod tests {
                 "a".to_string(),
                 Some(Literal::Bit(true).into())
             )
-            .as_qasm_str(),
+            .as_qasm3_str(),
             "bit a = 1;"
         );
     }
 
     #[test]
-    fn variable_assignment_as_qasm_str() {
+    fn variable_assignment_as_qasm3_str() {
         assert_eq!(
             VariableAssignment::new::<Statement>("a".to_string().into(), Literal::Bit(true).into())
-                .as_qasm_str(),
+                .as_qasm3_str(),
             "a = 1;"
         );
     }
 
     #[test]
-    fn gate_application_as_qasm_str() {
+    fn gate_application_as_qasm3_str() {
         assert_eq!(
             GateApplication::new::<Statement>(CustomGate::new(
                 "gh".to_string(),
                 vec!["l1".to_string().into(), "l2".to_string().into()],
                 vec!["q1".to_string().into(), "q2".to_string().into()]
             ))
-            .as_qasm_str(),
+            .as_qasm3_str(),
             "gh(l1, l2) q1 q2;"
         );
     }
