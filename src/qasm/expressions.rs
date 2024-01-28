@@ -36,7 +36,10 @@ impl AsQasmStr for Literal {
             Literal::Uint(lit) => lit.to_string(),
             Literal::Float(lit) => lit.to_string(),
             Literal::Pi => "pi".to_string(),
-            Literal::Complex(lit) => format!("({}) + ({}im)", lit.0, lit.1),
+            Literal::Complex(lit) => match lit.1.signum() == 1.0 {
+                true => format!("{} + {}im", lit.0, lit.1),
+                false => format!("{} - {}im", lit.0, lit.1.abs()),
+            },
         }
     }
 }
@@ -137,7 +140,7 @@ impl BinOp {
 impl AsQasmStr for BinOp {
     fn as_qasm_str(&self) -> String {
         format!(
-            "{}{}{}",
+            "{} {} {}",
             self.lhs.as_qasm_str(),
             self.op.as_qasm_str(),
             self.rhs.as_qasm_str()
@@ -209,5 +212,79 @@ impl<T: ExpressionTrait + 'static> From<T> for Expression {
         Self {
             expression: Rc::new(expression),
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn identifier_as_qasm_str() {
+        assert_eq!(Identifier::from("a").as_qasm_str(), "a");
+    }
+
+    #[test]
+    fn literal_as_qasm_str() {
+        assert_eq!(Literal::Bit(true).as_qasm_str(), "1");
+        assert_eq!(Literal::Bit(false).as_qasm_str(), "0");
+        assert_eq!(Literal::Bool(true).as_qasm_str(), "true");
+        assert_eq!(Literal::Bool(false).as_qasm_str(), "false");
+        assert_eq!(Literal::Int(1).as_qasm_str(), "1");
+        assert_eq!(Literal::Uint(1).as_qasm_str(), "1");
+        assert_eq!(Literal::Float(1.0).as_qasm_str(), "1");
+        assert_eq!(Literal::Pi.as_qasm_str(), "pi");
+        assert_eq!(Literal::Complex((1.0, 1.0)).as_qasm_str(), "1 + 1im");
+        assert_eq!(Literal::Complex((1.0, -1.0)).as_qasm_str(), "1 - 1im");
+    }
+
+    #[test]
+    fn array_as_qasm_str() {
+        assert_eq!(Array::new().as_qasm_str(), "{}");
+        assert_eq!(Array::from([Literal::Uint(1).into()]).as_qasm_str(), "{1}");
+        assert_eq!(
+            Array::from([Literal::Uint(2).into(), Literal::Uint(3).into()]).as_qasm_str(),
+            "{2, 3}"
+        );
+    }
+
+    #[test]
+    fn array_access_as_qasm_str() {
+        assert_eq!(
+            ArrayAccess::new::<Expression>("a".to_string(), vec![1]).as_qasm_str(),
+            "a[1]"
+        );
+        assert_eq!(
+            ArrayAccess::new::<Expression>("a".to_string(), vec![1, 2]).as_qasm_str(),
+            "a[1, 2]"
+        );
+    }
+
+    #[test]
+    fn measurement_as_qasm_str() {
+        assert_eq!(
+            Measurement::new::<Measurement>("a".to_string().into()).as_qasm_str(),
+            "measure a"
+        );
+    }
+
+    #[test]
+    fn bin_op_as_qasm_str() {
+        assert_eq!(
+            PlusOp::new::<BinOp>("a".to_string().into(), "b".to_string().into()).as_qasm_str(),
+            "a + b"
+        );
+        assert_eq!(
+            MinusOp::new::<BinOp>("a".to_string().into(), "b".to_string().into()).as_qasm_str(),
+            "a - b"
+        );
+        assert_eq!(
+            TimesOp::new::<BinOp>("a".to_string().into(), "b".to_string().into()).as_qasm_str(),
+            "a * b"
+        );
+        assert_eq!(
+            DivOp::new::<BinOp>("a".to_string().into(), "b".to_string().into()).as_qasm_str(),
+            "a / b"
+        );
     }
 }

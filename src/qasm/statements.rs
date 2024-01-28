@@ -151,3 +151,72 @@ impl<T: StatementTrait + 'static> From<T> for Statement {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::qasm::expressions::Literal;
+    use crate::qasm::gates::CustomGate;
+    use crate::qasm::types::Primitive;
+
+    #[test]
+    fn empty_line_as_qasm_str() {
+        assert_eq!(EmptyLine::new::<Statement>().as_qasm_str(), "");
+    }
+
+    #[test]
+    fn comment_as_qasm_str() {
+        assert_eq!(
+            Comment::new::<Statement>("comment".to_string()).as_qasm_str(),
+            "// comment"
+        );
+    }
+
+    #[test]
+    fn version_declaration_as_qasm_str() {
+        assert_eq!(
+            VersionDeclaration::new::<Statement>("3.0".to_string()).as_qasm_str(),
+            "OPENQASM 3.0;"
+        );
+    }
+
+    #[test]
+    fn variable_declaration_as_qasm_str() {
+        assert_eq!(
+            VariableDeclaration::new::<Statement>(Primitive::Bit.into(), "a".to_string(), None)
+                .as_qasm_str(),
+            "bit a;"
+        );
+        assert_eq!(
+            VariableDeclaration::new::<Statement>(
+                Primitive::Bit.into(),
+                "a".to_string(),
+                Some(Literal::Bit(true).into())
+            )
+            .as_qasm_str(),
+            "bit a = 1;"
+        );
+    }
+
+    #[test]
+    fn variable_assignment_as_qasm_str() {
+        assert_eq!(
+            VariableAssignment::new::<Statement>("a".to_string().into(), Literal::Bit(true).into())
+                .as_qasm_str(),
+            "a = 1;"
+        );
+    }
+
+    #[test]
+    fn gate_application_as_qasm_str() {
+        assert_eq!(
+            GateApplication::new::<Statement>(CustomGate::new(
+                "gh".to_string(),
+                vec!["l1".to_string().into(), "l2".to_string().into()],
+                vec!["q1".to_string().into(), "q2".to_string().into()]
+            ))
+            .as_qasm_str(),
+            "gh(l1, l2) q1 q2;"
+        );
+    }
+}
