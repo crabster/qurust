@@ -6,8 +6,8 @@ fn random_number_circuit() {
 OPENQASM 3.0;
 
 gate h q {
-    U(pi/2, 0, pi) q;
-    gphase(pi/-4);
+    U(pi / 2, 0, pi) q;
+    gphase(pi / -4);
 }
 
 qubit q;

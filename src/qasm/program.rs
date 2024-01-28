@@ -28,3 +28,18 @@ impl AsQasmStr for Program {
             .join("\n")
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::qasm::statements::Comment;
+
+    #[test]
+    fn test_program() {
+        assert_eq!(Program::new(vec![]).as_qasm_str(), "OPENQASM 3.0;\n");
+        assert_eq!(
+            Program::new(vec![Comment::new("comment".to_string())]).as_qasm_str(),
+            "OPENQASM 3.0;\n\n// comment"
+        );
+    }
+}

@@ -21,7 +21,13 @@ impl AsQasmStr for GateDeclaration {
         let body = self
             .body
             .iter()
-            .map(|stmt| format!("    {}", stmt.as_qasm_str()))
+            .map(|stmt| {
+                let mut stmt_str = stmt.as_qasm_str();
+                if !stmt_str.is_empty() {
+                    stmt_str = format!("    {}", stmt_str)
+                }
+                stmt_str
+            })
             .collect::<Vec<String>>()
             .join("\n");
         format!("gate {} {{\n{}\n}}", self.gate.as_qasm_str(), body)
@@ -49,5 +55,25 @@ impl<T: BlockTrait + 'static> From<T> for Block {
         Self {
             block: Rc::new(block),
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::qasm::statements::{Comment, EmptyLine, Statement};
+
+    #[test]
+    fn test_gate_declaration() {
+        let gate = CustomGate::new("foo".to_string(), vec![], vec![]);
+        let body = vec![
+            EmptyLine::new::<Statement>(),
+            Comment::new::<Statement>("comment".to_string()),
+            EmptyLine::new::<Statement>(),
+        ];
+        assert_eq!(
+            GateDeclaration::new::<Block>(gate, body).as_qasm_str(),
+            "gate foo {\n\n    // comment\n\n}"
+        );
     }
 }
