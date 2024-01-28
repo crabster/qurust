@@ -65,6 +65,7 @@ pub struct ArrayAccess {
 }
 
 impl ArrayAccess {
+    #[allow(clippy::new_ret_no_self)]
     pub fn new<T: From<ArrayAccess>>(identifier: Identifier, indices: Vec<isize>) -> T {
         Self {
             identifier,
@@ -94,6 +95,7 @@ pub struct Measurement {
 }
 
 impl Measurement {
+    #[allow(clippy::new_ret_no_self)]
     pub fn new<T: From<Measurement>>(expression: Expression) -> T {
         Self { expression }.into()
     }
@@ -132,6 +134,7 @@ pub struct BinOp {
 }
 
 impl BinOp {
+    #[allow(clippy::new_ret_no_self)]
     fn new<T: From<BinOp>>(op: BinOpType, lhs: Expression, rhs: Expression) -> T {
         Self { op, lhs, rhs }.into()
     }
@@ -151,32 +154,36 @@ impl AsQasmStr for BinOp {
 pub struct PlusOp(BinOp);
 
 impl PlusOp {
+    #[allow(clippy::new_ret_no_self)]
     pub fn new<T: From<BinOp>>(lhs: Expression, rhs: Expression) -> T {
-        BinOp::new::<T>(BinOpType::Plus, lhs, rhs).into()
+        BinOp::new::<T>(BinOpType::Plus, lhs, rhs)
     }
 }
 
 pub struct MinusOp(BinOp);
 
 impl MinusOp {
+    #[allow(clippy::new_ret_no_self)]
     pub fn new<T: From<BinOp>>(lhs: Expression, rhs: Expression) -> T {
-        BinOp::new::<T>(BinOpType::Minus, lhs, rhs).into()
+        BinOp::new::<T>(BinOpType::Minus, lhs, rhs)
     }
 }
 
 pub struct TimesOp(BinOp);
 
 impl TimesOp {
+    #[allow(clippy::new_ret_no_self)]
     pub fn new<T: From<BinOp>>(lhs: Expression, rhs: Expression) -> T {
-        BinOp::new::<T>(BinOpType::Times, lhs, rhs).into()
+        BinOp::new::<T>(BinOpType::Times, lhs, rhs)
     }
 }
 
 pub struct DivOp(BinOp);
 
 impl DivOp {
+    #[allow(clippy::new_ret_no_self)]
     pub fn new<T: From<BinOp>>(lhs: Expression, rhs: Expression) -> T {
-        BinOp::new::<T>(BinOpType::Div, lhs, rhs).into()
+        BinOp::new::<T>(BinOpType::Div, lhs, rhs)
     }
 }
 

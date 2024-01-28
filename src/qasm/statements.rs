@@ -9,6 +9,7 @@ use std::rc::Rc;
 pub struct EmptyLine {}
 
 impl EmptyLine {
+    #[allow(clippy::new_ret_no_self)]
     pub fn new<T: From<EmptyLine>>() -> T {
         Self {}.into()
     }
@@ -26,6 +27,7 @@ pub struct Comment {
 }
 
 impl Comment {
+    #[allow(clippy::new_ret_no_self)]
     pub fn new<T: From<Comment>>(comment: String) -> T {
         Self { comment }.into()
     }
@@ -43,6 +45,7 @@ pub struct VersionDeclaration {
 }
 
 impl VersionDeclaration {
+    #[allow(clippy::new_ret_no_self)]
     pub fn new<T: From<VersionDeclaration>>(version: String) -> T {
         Self { version }.into()
     }
@@ -62,6 +65,7 @@ pub struct VariableDeclaration {
 }
 
 impl VariableDeclaration {
+    #[allow(clippy::new_ret_no_self)]
     pub fn new<T: From<VariableDeclaration>>(
         type_: Type,
         name: String,
@@ -88,6 +92,7 @@ pub struct VariableAssignment {
 }
 
 impl VariableAssignment {
+    #[allow(clippy::new_ret_no_self)]
     pub fn new<T: From<VariableAssignment>>(left_expr: Expression, right_expr: Expression) -> T {
         Self {
             left_expr,
@@ -113,6 +118,7 @@ pub struct GateApplication {
 }
 
 impl GateApplication {
+    #[allow(clippy::new_ret_no_self)]
     pub fn new<T: From<GateApplication>>(gate: Gate) -> T {
         Self { gate }.into()
     }
@@ -129,7 +135,7 @@ pub struct Statement {
     stmt: Rc<dyn AsQasmStr>,
 }
 
-pub trait StatementTrait: AsQasmStr {}
+pub(crate) trait StatementTrait: AsQasmStr {}
 
 impl StatementTrait for EmptyLine {}
 impl StatementTrait for Comment {}

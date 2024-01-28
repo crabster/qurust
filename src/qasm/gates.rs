@@ -12,6 +12,7 @@ pub struct U3Gate {
 }
 
 impl U3Gate {
+    #[allow(clippy::new_ret_no_self)]
     pub fn new<T: From<U3Gate>>(
         theta: Expression,
         phi: Expression,
@@ -46,6 +47,7 @@ pub struct GPGate {
 }
 
 impl GPGate {
+    #[allow(clippy::new_ret_no_self)]
     pub fn new<T: From<GPGate>>(delta: Expression) -> T {
         Self { delta }.into()
     }
@@ -65,6 +67,7 @@ pub struct CustomGate {
 }
 
 impl CustomGate {
+    #[allow(clippy::new_ret_no_self)]
     pub fn new<T: From<CustomGate>>(
         name: String,
         params: Vec<Expression>,
