@@ -5,12 +5,16 @@ use crate::qasm3::ir::AsQasmStr;
 #[derive(Debug)]
 pub struct AliasDeclaration {
     identifier: Identifier,
-    expr: Expression,
+    exprs: Vec<Expression>,
 }
 
 impl AliasDeclaration {
-    pub fn new<T: From<AliasDeclaration>>(identifier: Identifier, expr: Expression) -> T {
-        AliasDeclaration { identifier, expr }.into()
+    pub fn new(identifier: Identifier, exprs: Vec<Expression>) -> AliasDeclaration {
+        AliasDeclaration { identifier, exprs }
+    }
+
+    pub fn newt<T: From<AliasDeclaration>>(identifier: Identifier, exprs: Vec<Expression>) -> T {
+        Self::new(identifier, exprs).into()
     }
 }
 
@@ -19,37 +23,41 @@ impl AsQasmStr for AliasDeclaration {
         format!(
             "let {} = {};",
             self.identifier.as_qasm_str(),
-            self.expr.as_qasm_str()
+            self.exprs
+                .iter()
+                .map(|expr| expr.as_qasm_str())
+                .collect::<Vec<_>>()
+                .join(" ++ ")
         )
     }
 }
 
 #[derive(Debug)]
 pub struct Assignment {
-    identifier: Identifier,
+    id_expr: Expression,
     operator: Option<BinaryOperator>,
     expr: Expression,
 }
 
 impl Assignment {
-    pub fn new<T: From<Assignment>>(identifier: Identifier, expr: Expression) -> T {
+    pub fn new(
+        id_expr: Expression,
+        operator: Option<BinaryOperator>,
+        expr: Expression,
+    ) -> Assignment {
         Assignment {
-            identifier,
-            operator: None,
+            id_expr,
+            operator,
             expr,
-        }.into()
+        }
     }
 
-    pub fn with_op<T: From<Assignment>>(
-        identifier: Identifier,
-        operator: BinaryOperator,
+    pub fn newt<T: From<Assignment>>(
+        id_expr: Expression,
+        operator: Option<BinaryOperator>,
         expr: Expression,
     ) -> T {
-        Assignment {
-            identifier,
-            operator: Some(operator),
-            expr,
-        }.into()
+        Self::new(id_expr, operator, expr).into()
     }
 }
 
@@ -57,12 +65,12 @@ impl AsQasmStr for Assignment {
     fn as_qasm_str(&self) -> String {
         let assign_op = match &self.operator {
             Some(op) => op.as_qasm_str(),
-            None => "=".to_string(),
+            None => "".to_string(),
         };
 
         format!(
-            "{} {} {}",
-            self.identifier.as_qasm_str(),
+            "{} {}= {};",
+            self.id_expr.as_qasm_str(),
             assign_op,
             self.expr.as_qasm_str()
         )
@@ -75,21 +83,29 @@ pub struct Barrier {
 }
 
 impl Barrier {
-    pub fn new<T: From<Barrier>>(exprs: Vec<Expression>) -> T {
-        Barrier { exprs }.into()
+    pub fn new(exprs: Vec<Expression>) -> Barrier {
+        Barrier { exprs }
+    }
+
+    pub fn newt<T: From<Barrier>>(exprs: Vec<Expression>) -> T {
+        Self::new(exprs).into()
     }
 }
 
 impl AsQasmStr for Barrier {
     fn as_qasm_str(&self) -> String {
-        format!(
-            "barrier {};",
-            self.exprs
-                .iter()
-                .map(|e| e.as_qasm_str())
-                .collect::<Vec<_>>()
-                .join(", ")
-        )
+        if self.exprs.is_empty() {
+            "barrier;".to_string()
+        } else {
+            format!(
+                "barrier {};",
+                self.exprs
+                    .iter()
+                    .map(|e| e.as_qasm_str())
+                    .collect::<Vec<_>>()
+                    .join(", ")
+            )
+        }
     }
 }
 
@@ -100,8 +116,12 @@ pub struct BoxStatement {
 }
 
 impl BoxStatement {
-    pub fn new<T: From<BoxStatement>>(expr: Option<Expression>, scope: Scope) -> T {
-        BoxStatement { expr, scope }.into()
+    pub fn new(expr: Option<Expression>, scope: Scope) -> BoxStatement {
+        BoxStatement { expr, scope }
+    }
+
+    pub fn newt<T: From<BoxStatement>>(expr: Option<Expression>, scope: Scope) -> T {
+        Self::new(expr, scope).into()
     }
 }
 
@@ -110,7 +130,7 @@ impl AsQasmStr for BoxStatement {
         format!(
             "box{} {}",
             match &self.expr {
-                Some(expr) => expr.as_qasm_str(),
+                Some(expr) => format!("[{}]", expr.as_qasm_str()),
                 None => "".to_string(),
             },
             self.scope.as_qasm_str()
@@ -120,18 +140,22 @@ impl AsQasmStr for BoxStatement {
 
 #[derive(Debug)]
 pub struct Cal {
-    cal_block: String,
+    cal_block: Option<String>,
 }
 
 impl Cal {
-    pub fn new<T: From<Cal>>(cal_block: String) -> T {
-        Cal { cal_block }.into()
+    pub fn new(cal_block: Option<String>) -> Cal {
+        Cal { cal_block }
+    }
+
+    pub fn newt<T: From<Cal>>(cal_block: Option<String>) -> T {
+        Self::new(cal_block).into()
     }
 }
 
 impl AsQasmStr for Cal {
     fn as_qasm_str(&self) -> String {
-        format!("cal {{{}}}", self.cal_block)
+        format!("cal {{{}}}", self.cal_block.clone().unwrap_or_default())
     }
 }
 
@@ -141,14 +165,18 @@ pub struct CalibrationGrammar {
 }
 
 impl CalibrationGrammar {
-    pub fn new<T: From<CalibrationGrammar>>(grammar: String) -> T {
-        CalibrationGrammar { grammar }.into()
+    pub fn new(grammar: String) -> CalibrationGrammar {
+        CalibrationGrammar { grammar }
+    }
+
+    pub fn newt<T: From<CalibrationGrammar>>(grammar: String) -> T {
+        Self::new(grammar).into()
     }
 }
 
 impl AsQasmStr for CalibrationGrammar {
     fn as_qasm_str(&self) -> String {
-        format!("defcalgrammar \"{}\";", self.grammar)
+        format!("defcalgrammar {};", self.grammar)
     }
 }
 
@@ -160,12 +188,16 @@ pub struct ClassicalDeclaration {
 }
 
 impl ClassicalDeclaration {
-    pub fn new<T: From<ClassicalDeclaration>>(
+    pub fn new(type_: Type, id: Identifier, expr: Option<Expression>) -> ClassicalDeclaration {
+        ClassicalDeclaration { type_, id, expr }
+    }
+
+    pub fn newt<T: From<ClassicalDeclaration>>(
         type_: Type,
         id: Identifier,
         expr: Option<Expression>,
     ) -> T {
-        ClassicalDeclaration { type_, id, expr }.into()
+        Self::new(type_, id, expr).into()
     }
 }
 
@@ -191,8 +223,12 @@ pub struct ConstDeclaration {
 }
 
 impl ConstDeclaration {
-    pub fn new<T: From<ConstDeclaration>>(type_: Type, id: Identifier, expr: Expression) -> T {
-        ConstDeclaration { type_, id, expr }.into()
+    pub fn new(type_: Type, id: Identifier, expr: Expression) -> ConstDeclaration {
+        ConstDeclaration { type_, id, expr }
+    }
+
+    pub fn newt<T: From<ConstDeclaration>>(type_: Type, id: Identifier, expr: Expression) -> T {
+        Self::new(type_, id, expr).into()
     }
 }
 
@@ -215,26 +251,20 @@ pub struct DefArgument {
 }
 
 impl DefArgument {
-    pub fn new<T: From<DefArgument>>(type_: Type, id: Identifier) -> T {
+    pub fn new(type_: Type, id: Identifier, reg_size: Option<Expression>) -> DefArgument {
         DefArgument {
             type_,
             id,
-            reg_size: None,
+            reg_size,
         }
-        .into()
     }
 
-    pub fn with_reg_size<T: From<DefArgument>>(
+    pub fn newt<T: From<DefArgument>>(
         type_: Type,
         id: Identifier,
-        reg_size: Expression,
+        reg_size: Option<Expression>,
     ) -> T {
-        DefArgument {
-            type_,
-            id,
-            reg_size: Some(reg_size),
-        }
-        .into()
+        Self::new(type_, id, reg_size).into()
     }
 }
 
@@ -261,18 +291,27 @@ pub struct Def {
 }
 
 impl Def {
-    pub fn new<T: From<Def>>(
+    pub fn new(
         id: Identifier,
         args: Vec<DefArgument>,
         ret_type: Option<Type>,
         scope: Scope,
-    ) -> T {
+    ) -> Def {
         Def {
             id,
             args,
             ret_type,
             scope,
-        }.into()
+        }
+    }
+
+    pub fn newt<T: From<Def>>(
+        id: Identifier,
+        args: Vec<DefArgument>,
+        ret_type: Option<Type>,
+        scope: Scope,
+    ) -> T {
+        Self::new(id, args, ret_type, scope).into()
     }
 }
 
@@ -347,37 +386,52 @@ pub struct Defcal {
     args: Vec<DefcalArgument>,
     operands: Vec<Expression>,
     ret_type: Option<Type>,
-    cal_block: String,
+    cal_block: Option<String>,
 }
 
 impl Defcal {
-    pub fn new<T: From<Defcal>>(
+    pub fn new(
         target: DefcalTarget,
         args: Vec<DefcalArgument>,
         operands: Vec<Expression>,
         ret_type: Option<Type>,
-        cal_block: String,
-    ) -> T {
+        cal_block: Option<String>,
+    ) -> Defcal {
         Defcal {
             target,
             args,
             operands,
             ret_type,
             cal_block,
-        }.into()
+        }
+    }
+
+    pub fn newt<T: From<Defcal>>(
+        target: DefcalTarget,
+        args: Vec<DefcalArgument>,
+        operands: Vec<Expression>,
+        ret_type: Option<Type>,
+        cal_block: Option<String>,
+    ) -> T {
+        Self::new(target, args, operands, ret_type, cal_block).into()
     }
 }
 
 impl AsQasmStr for Defcal {
     fn as_qasm_str(&self) -> String {
+        let mut args = self
+            .args
+            .iter()
+            .map(|arg| arg.as_qasm_str())
+            .collect::<Vec<_>>()
+            .join(", ");
+        if !args.is_empty() {
+            args = format!("({})", args);
+        }
         format!(
-            "defcal {}({}){}{} {{{}}}",
+            "defcal {}{} {}{} {{{}}}",
             self.target.as_qasm_str(),
-            self.args
-                .iter()
-                .map(|arg| arg.as_qasm_str())
-                .collect::<Vec<_>>()
-                .join(", "),
+            args,
             self.operands
                 .iter()
                 .map(|operand| operand.as_qasm_str())
@@ -387,7 +441,7 @@ impl AsQasmStr for Defcal {
                 Some(ret_type) => format!(" -> {}", ret_type.as_qasm_str()),
                 None => "".to_string(),
             },
-            self.cal_block
+            self.cal_block.clone().unwrap_or_default()
         )
     }
 }
@@ -399,39 +453,76 @@ pub struct Delay {
 }
 
 impl Delay {
-    pub fn new<T: From<Delay>>(duration: Expression, operands: Vec<Expression>) -> T {
-        Delay { duration, operands }.into()
+    pub fn new(duration: Expression, operands: Vec<Expression>) -> Delay {
+        Delay { duration, operands }
+    }
+
+    pub fn newt<T: From<Delay>>(duration: Expression, operands: Vec<Expression>) -> T {
+        Self::new(duration, operands).into()
     }
 }
 
 impl AsQasmStr for Delay {
     fn as_qasm_str(&self) -> String {
-        format!(
-            "delay[{}] {};",
-            self.duration.as_qasm_str(),
-            self.operands
-                .iter()
-                .map(|operand| operand.as_qasm_str())
-                .collect::<Vec<_>>()
-                .join(", ")
-        )
+        if self.operands.is_empty() {
+            format!("delay [{}];", self.duration.as_qasm_str())
+        } else {
+            format!(
+                "delay [{}] {};",
+                self.duration.as_qasm_str(),
+                self.operands
+                    .iter()
+                    .map(|operand| operand.as_qasm_str())
+                    .collect::<Vec<_>>()
+                    .join(", ")
+            )
+        }
+    }
+}
+
+#[derive(Debug)]
+pub struct ExternArgument {
+    type_: Type,
+    expr: Option<Expression>,
+}
+
+impl ExternArgument {
+    pub fn new(type_: Type, expr: Option<Expression>) -> ExternArgument {
+        ExternArgument { type_, expr }
+    }
+
+    pub fn newt<T: From<ExternArgument>>(type_: Type, expr: Option<Expression>) -> T {
+        Self::new(type_, expr).into()
+    }
+}
+
+impl AsQasmStr for ExternArgument {
+    fn as_qasm_str(&self) -> String {
+        match &self.expr {
+            Some(expr) => format!("{}[{}]", self.type_.as_qasm_str(), expr.as_qasm_str()),
+            None => self.type_.as_qasm_str(),
+        }
     }
 }
 
 #[derive(Debug)]
 pub struct Extern {
     id: Identifier,
-    args: Vec<(Type, Option<Expression>)>,
+    args: Vec<ExternArgument>,
     ret_type: Option<Type>,
 }
 
 impl Extern {
-    pub fn new<T: From<Extern>>(
+    pub fn new(id: Identifier, args: Vec<ExternArgument>, ret_type: Option<Type>) -> Extern {
+        Extern { id, args, ret_type }
+    }
+
+    pub fn newt<T: From<Extern>>(
         id: Identifier,
-        args: Vec<(Type, Option<Expression>)>,
+        args: Vec<ExternArgument>,
         ret_type: Option<Type>,
     ) -> T {
-        Extern { id, args, ret_type }.into()
+        Self::new(id, args, ret_type).into()
     }
 }
 
@@ -442,16 +533,7 @@ impl AsQasmStr for Extern {
             self.id.as_qasm_str(),
             self.args
                 .iter()
-                .map(|(type_, expr)| {
-                    format!(
-                        "{}{}",
-                        type_.as_qasm_str(),
-                        match expr {
-                            Some(expr) => format!(" {}", expr.as_qasm_str()),
-                            None => "".to_string(),
-                        }
-                    )
-                })
+                .map(|arg| arg.as_qasm_str())
                 .collect::<Vec<_>>()
                 .join(", "),
             match &self.ret_type {
@@ -471,18 +553,21 @@ pub struct For {
 }
 
 impl For {
-    pub fn new<T: From<For>>(
-        var_type: Scalar,
-        var: Identifier,
-        range: Expression,
-        scope: Scope,
-    ) -> T {
+    pub fn new(var_type: Scalar, var: Identifier, range: Expression, scope: Scope) -> Self {
         For {
             var_type,
             var,
             range,
             scope,
-        }.into()
+        }
+    }
+    pub fn newt<T: From<For>>(
+        var_type: Scalar,
+        var: Identifier,
+        range: Expression,
+        scope: Scope,
+    ) -> T {
+        Self::new(var_type, var, range, scope).into()
     }
 }
 
@@ -492,7 +577,10 @@ impl AsQasmStr for For {
             "for {} {} in {} {}",
             self.var_type.as_qasm_str(),
             self.var.as_qasm_str(),
-            self.range.as_qasm_str(),
+            match &self.range {
+                Expression::Range(range) => format!("[{}]", range.as_qasm_str()),
+                _ => self.range.as_qasm_str(),
+            },
             self.scope.as_qasm_str()
         )
     }
@@ -502,17 +590,22 @@ impl AsQasmStr for For {
 pub enum GateMod {
     Inv,
     Pow(Expression),
-    Ctrl(Expression),
-    NegCtrl(Expression),
+    Ctrl(Option<Expression>),
+    NegCtrl(Option<Expression>),
 }
 
 impl AsQasmStr for GateMod {
     fn as_qasm_str(&self) -> String {
+        let opt_expr_str = |expr: &Option<Expression>| match expr {
+            Some(expr) => format!("({})", expr.as_qasm_str()),
+            None => "".to_string(),
+        };
+
         match self {
             GateMod::Inv => "inv @".to_string(),
             GateMod::Pow(expr) => format!("pow({}) @", expr.as_qasm_str()),
-            GateMod::Ctrl(expr) => format!("ctrl({}) @", expr.as_qasm_str()),
-            GateMod::NegCtrl(expr) => format!("negctrl({}) @", expr.as_qasm_str()),
+            GateMod::Ctrl(expr) => format!("ctrl{} @", opt_expr_str(expr)),
+            GateMod::NegCtrl(expr) => format!("negctrl{} @", opt_expr_str(expr)),
         }
     }
 }
@@ -527,47 +620,81 @@ pub struct GateCall {
 }
 
 impl GateCall {
-    pub fn new<T: From<GateCall>>(
+    pub fn new(
         mods: Vec<GateMod>,
         id: Identifier,
         params: Vec<Expression>,
         expr: Option<Expression>,
         args: Vec<Expression>,
-    ) -> T {
+    ) -> GateCall {
         GateCall {
             mods,
             id,
             params,
             expr,
             args,
-        }.into()
+        }
+    }
+
+    pub fn newt<T: From<GateCall>>(
+        mods: Vec<GateMod>,
+        id: Identifier,
+        params: Vec<Expression>,
+        expr: Option<Expression>,
+        args: Vec<Expression>,
+    ) -> T {
+        Self::new(mods, id, params, expr, args).into()
     }
 }
 
 impl AsQasmStr for GateCall {
     fn as_qasm_str(&self) -> String {
+        let mods_str = if self.mods.is_empty() {
+            "".to_string()
+        } else {
+            format!(
+                "{} ",
+                self.mods
+                    .iter()
+                    .map(|mod_| mod_.as_qasm_str())
+                    .collect::<Vec<_>>()
+                    .join(" ")
+            )
+        };
+        let params_str = if self.params.is_empty() {
+            "".to_string()
+        } else {
+            format!(
+                "({})",
+                self.params
+                    .iter()
+                    .map(|param| param.as_qasm_str())
+                    .collect::<Vec<_>>()
+                    .join(", ")
+            )
+        };
+        let args_str = if self.args.is_empty() {
+            "".to_string()
+        } else {
+            format!(
+                " {}",
+                self.args
+                    .iter()
+                    .map(|arg| arg.as_qasm_str())
+                    .collect::<Vec<_>>()
+                    .join(", ")
+            )
+        };
         format!(
-            "{}{}({}){} {};",
-            self.mods
-                .iter()
-                .map(|mod_| mod_.as_qasm_str())
-                .collect::<Vec<_>>()
-                .join(" "),
+            "{}{}{}{}{};",
+            mods_str,
             self.id.as_qasm_str(),
-            self.params
-                .iter()
-                .map(|param| param.as_qasm_str())
-                .collect::<Vec<_>>()
-                .join(", "),
+            params_str,
             match &self.expr {
                 Some(expr) => format!("[{}]", expr.as_qasm_str()),
                 None => "".to_string(),
             },
-            self.args
-                .iter()
-                .map(|arg| arg.as_qasm_str())
-                .collect::<Vec<_>>()
-                .join(", ")
+            args_str
         )
     }
 }
@@ -581,25 +708,34 @@ pub struct Gate {
 }
 
 impl Gate {
-    pub fn new<T: From<Gate>>(
+    pub fn new(
         id: Identifier,
         params: Vec<Identifier>,
         args: Vec<Identifier>,
         scope: Scope,
-    ) -> T {
+    ) -> Self {
         Gate {
             id,
             params,
             args,
             scope,
-        }.into()
+        }
+    }
+
+    pub fn newt<T: From<Gate>>(
+        id: Identifier,
+        params: Vec<Identifier>,
+        args: Vec<Identifier>,
+        scope: Scope,
+    ) -> T {
+        Self::new(id, params, args, scope).into()
     }
 }
 
 impl AsQasmStr for Gate {
     fn as_qasm_str(&self) -> String {
         format!(
-            "gate {}{}{} {}",
+            "gate {}{} {} {}",
             self.id.as_qasm_str(),
             match self.params.len() {
                 0 => "".to_string(),
@@ -630,24 +766,24 @@ pub struct If {
 }
 
 impl If {
-    pub fn new<T: From<If>>(condition: Expression, body: StatementOrScope) -> T {
-        If {
-            condition: Box::new(condition),
-            body: Box::new(body),
-            else_body: Box::new(None),
-        }.into()
-    }
-
-    pub fn with_else<T: From<If>>(
+    pub fn new(
         condition: Expression,
         body: StatementOrScope,
-        else_body: StatementOrScope,
-    ) -> T {
+        else_body: Option<StatementOrScope>,
+    ) -> Self {
         If {
             condition: Box::new(condition),
             body: Box::new(body),
-            else_body: Box::new(Some(else_body)),
-        }.into()
+            else_body: Box::new(else_body),
+        }
+    }
+
+    pub fn newt<T: From<If>>(
+        condition: Expression,
+        body: StatementOrScope,
+        else_body: Option<StatementOrScope>,
+    ) -> T {
+        Self::new(condition, body, else_body).into()
     }
 }
 
@@ -671,8 +807,12 @@ pub struct Include {
 }
 
 impl Include {
-    pub fn new<T: From<Include>>(path: String) -> T {
-        Include { path }.into()
+    pub fn new(path: String) -> Self {
+        Include { path }
+    }
+
+    pub fn newt<T: From<Include>>(path: String) -> T {
+        Self::new(path).into()
     }
 }
 
@@ -705,8 +845,12 @@ pub struct IODeclaration {
 }
 
 impl IODeclaration {
-    pub fn new<T: From<IODeclaration>>(io_type: IOType, type_: Type, id: Identifier) -> T {
-        IODeclaration { io_type, type_, id }.into()
+    pub fn new(io_type: IOType, type_: Type, id: Identifier) -> Self {
+        IODeclaration { io_type, type_, id }
+    }
+
+    pub fn newt<T: From<IODeclaration>>(io_type: IOType, type_: Type, id: Identifier) -> T {
+        Self::new(io_type, type_, id).into()
     }
 }
 
@@ -728,18 +872,22 @@ pub struct MeasureArrowAssignment {
 }
 
 impl MeasureArrowAssignment {
-    pub fn new<T: From<MeasureArrowAssignment>>(
+    pub fn new(measure_expr: Expression, expr: Option<Expression>) -> Self {
+        MeasureArrowAssignment { measure_expr, expr }
+    }
+
+    pub fn newt<T: From<MeasureArrowAssignment>>(
         measure_expr: Expression,
         expr: Option<Expression>,
     ) -> T {
-        MeasureArrowAssignment { measure_expr, expr }.into()
+        Self::new(measure_expr, expr).into()
     }
 }
 
 impl AsQasmStr for MeasureArrowAssignment {
     fn as_qasm_str(&self) -> String {
         format!(
-            "{}{}",
+            "{}{};",
             self.measure_expr.as_qasm_str(),
             match &self.expr {
                 Some(expr) => format!(" -> {}", expr.as_qasm_str()),
@@ -757,12 +905,16 @@ pub struct OldStyleDeclaration {
 }
 
 impl OldStyleDeclaration {
-    pub fn new<T: From<OldStyleDeclaration>>(
+    pub fn new(type_: Type, id: Identifier, expr: Option<Expression>) -> Self {
+        OldStyleDeclaration { type_, id, expr }
+    }
+
+    pub fn newt<T: From<OldStyleDeclaration>>(
         type_: Type,
         id: Identifier,
         expr: Option<Expression>,
     ) -> T {
-        OldStyleDeclaration { type_, id, expr }.into()
+        Self::new(type_, id, expr).into()
     }
 }
 
@@ -786,8 +938,12 @@ pub struct Pragma {
 }
 
 impl Pragma {
-    pub fn new<T: From<Pragma>>(content: String) -> T {
-        Pragma { content }.into()
+    pub fn new(content: String) -> Pragma {
+        Pragma { content }
+    }
+
+    pub fn newt<T: From<Pragma>>(content: String) -> T {
+        Pragma::new(content).into()
     }
 }
 
@@ -804,8 +960,12 @@ pub struct QuantumDeclaration {
 }
 
 impl QuantumDeclaration {
-    pub fn new<T: From<QuantumDeclaration>>(type_: Type, id: Identifier) -> T {
-        QuantumDeclaration { type_, id }.into()
+    pub fn new(type_: Type, id: Identifier) -> Self {
+        QuantumDeclaration { type_, id }
+    }
+
+    pub fn newt<T: From<QuantumDeclaration>>(type_: Type, id: Identifier) -> T {
+        Self::new(type_, id).into()
     }
 }
 
@@ -817,18 +977,22 @@ impl AsQasmStr for QuantumDeclaration {
 
 #[derive(Debug)]
 pub struct Reset {
-    id: Identifier,
+    expr: Expression,
 }
 
 impl Reset {
-    pub fn new<T: From<Reset>>(id: Identifier) -> T {
-        Reset { id }.into()
+    pub fn new(expr: Expression) -> Reset {
+        Reset { expr }
+    }
+
+    pub fn newt<T: From<Reset>>(expr: Expression) -> T {
+        Reset::new(expr).into()
     }
 }
 
 impl AsQasmStr for Reset {
     fn as_qasm_str(&self) -> String {
-        format!("reset {};", self.id.as_qasm_str())
+        format!("reset {};", self.expr.as_qasm_str())
     }
 }
 
@@ -838,8 +1002,12 @@ pub struct Return {
 }
 
 impl Return {
-    pub fn new<T: From<Return>>(expr: Option<Expression>) -> T {
-        Return { expr }.into()
+    pub fn new(expr: Option<Expression>) -> Return {
+        Return { expr }
+    }
+
+    pub fn newt<T: From<Return>>(expr: Option<Expression>) -> T {
+        Self::new(expr).into()
     }
 }
 
@@ -859,8 +1027,15 @@ pub struct While {
 }
 
 impl While {
-    pub fn new<T: From<While>>(condition: Expression, body: StatementOrScope) -> T {
-        While { condition, body: Box::new(body) }.into()
+    pub fn new(condition: Expression, body: StatementOrScope) -> While {
+        While {
+            condition,
+            body: Box::new(body),
+        }
+    }
+
+    pub fn newt<T: From<While>>(condition: Expression, body: StatementOrScope) -> T {
+        Self::new(condition, body).into()
     }
 }
 
@@ -881,8 +1056,12 @@ pub struct SwitchItem {
 }
 
 impl SwitchItem {
-    pub fn new<T: From<SwitchItem>>(exprs: Vec<Expression>, body: Scope) -> T {
-        SwitchItem { exprs, body }.into()
+    pub fn new(exprs: Vec<Expression>, body: Scope) -> SwitchItem {
+        SwitchItem { exprs, body }
+    }
+
+    pub fn newt<T: From<SwitchItem>>(exprs: Vec<Expression>, body: Scope) -> T {
+        Self::new(exprs, body).into()
     }
 }
 
@@ -905,36 +1084,64 @@ pub struct Switch {
     expr: Expression,
     items: Vec<SwitchItem>,
     default: Option<Scope>,
+    indent: usize,
 }
 
 impl Switch {
-    pub fn new<T: From<Switch>>(
-        expr: Expression,
-        items: Vec<SwitchItem>,
-        default: Option<Scope>,
-    ) -> T {
+    pub fn new(expr: Expression, items: Vec<SwitchItem>, default: Option<Scope>) -> Switch {
         Switch {
             expr,
             items,
             default,
-        }.into()
+            indent: 4,
+        }
+    }
+
+    pub fn newt<T: From<Switch>>(
+        expr: Expression,
+        items: Vec<SwitchItem>,
+        default: Option<Scope>,
+    ) -> T {
+        Self::new(expr, items, default).into()
+    }
+
+    pub fn with_indent(
+        expr: Expression,
+        items: Vec<SwitchItem>,
+        default: Option<Scope>,
+        indent: usize,
+    ) -> Switch {
+        Switch {
+            expr,
+            items,
+            default,
+            indent,
+        }
     }
 }
 
 impl AsQasmStr for Switch {
     fn as_qasm_str(&self) -> String {
+        let mut body = "".to_string();
+        if !self.items.is_empty() || !self.default.is_none() {
+            body = format!(
+                "\n{}\n{}",
+                self.items
+                    .iter()
+                    .map(|item| item.as_qasm_str())
+                    .collect::<Vec<String>>()
+                    .join("\n"),
+                match &self.default {
+                    Some(scope) => format!("default: {}\n", scope.as_qasm_str()),
+                    None => "".to_string(),
+                }
+            );
+        }
+
         format!(
-            "switch ({}) {{\n{}\n{}}}",
+            "switch ({}) {{{}}}",
             self.expr.as_qasm_str(),
-            self.items
-                .iter()
-                .map(|item| item.as_qasm_str())
-                .collect::<Vec<String>>()
-                .join("\n"),
-            match &self.default {
-                Some(scope) => format!("default: {}\n", scope.as_qasm_str()),
-                None => "".to_string(),
-            }
+            indent::indent_all_by(self.indent, body),
         )
     }
 }
@@ -953,19 +1160,31 @@ impl Annotation {
 
 impl AsQasmStr for Annotation {
     fn as_qasm_str(&self) -> String {
-        format!("@{} {}", self.id.as_qasm_str(), self.content)
+        let content = if self.content.is_empty() {
+            "".to_string()
+        } else {
+            format!(" {}", self.content)
+        };
+        format!("@{}{}", self.id.as_qasm_str(), content)
     }
 }
 
 #[derive(Debug)]
 pub struct Annotated {
-    annotations: Vec<Annotation>, 
+    annotations: Vec<Annotation>,
     stmt: Box<Statement>,
 }
 
 impl Annotated {
-    pub fn new<T: From<Annotated>>(annotations: Vec<Annotation>, stmt: Box<Statement>) -> T {
-        Annotated { annotations, stmt }.into()
+    pub fn new(annotations: Vec<Annotation>, stmt: Statement) -> Annotated {
+        Annotated {
+            annotations,
+            stmt: Box::new(stmt),
+        }
+    }
+
+    pub fn newt<T: From<Annotated>>(annotations: Vec<Annotation>, stmt: Statement) -> T {
+        Self::new(annotations, stmt).into()
     }
 }
 
@@ -989,7 +1208,6 @@ impl AsQasmStr for Annotated {
 
 #[derive(Debug)]
 pub enum Statement {
-    Annotated(Annotated),
     AliasDeclaration(AliasDeclaration),
     Assignment(Assignment),
     Barrier(Barrier),
@@ -1014,12 +1232,13 @@ pub enum Statement {
     IODeclaration(IODeclaration),
     MeasureArrowAssignment(MeasureArrowAssignment),
     OldStyleDeclaration(OldStyleDeclaration),
-    Pragma(String),
+    Pragma(Pragma),
     QuantumDeclaration(QuantumDeclaration),
     Reset(Reset),
     Return(Return),
     While(While),
     Switch(Switch),
+    Annotated(Annotated),
 }
 
 impl AsQasmStr for Statement {
@@ -1048,11 +1267,9 @@ impl AsQasmStr for Statement {
             Statement::If(if_stmt) => if_stmt.as_qasm_str(),
             Statement::Include(include) => include.as_qasm_str(),
             Statement::IODeclaration(decl) => decl.as_qasm_str(),
-            Statement::MeasureArrowAssignment(assignment) => {
-                assignment.as_qasm_str()
-            }
+            Statement::MeasureArrowAssignment(assignment) => assignment.as_qasm_str(),
             Statement::OldStyleDeclaration(decl) => decl.as_qasm_str(),
-            Statement::Pragma(pragma) => format!("#pragma {}", pragma),
+            Statement::Pragma(pragma) => pragma.as_qasm_str(),
             Statement::QuantumDeclaration(decl) => decl.as_qasm_str(),
             Statement::Reset(reset) => reset.as_qasm_str(),
             Statement::Return(return_stmt) => return_stmt.as_qasm_str(),
@@ -1062,27 +1279,205 @@ impl AsQasmStr for Statement {
     }
 }
 
+impl From<AliasDeclaration> for Statement {
+    fn from(decl: AliasDeclaration) -> Self {
+        Statement::AliasDeclaration(decl)
+    }
+}
+
+impl From<Assignment> for Statement {
+    fn from(assignment: Assignment) -> Self {
+        Statement::Assignment(assignment)
+    }
+}
+
+impl From<Barrier> for Statement {
+    fn from(barrier: Barrier) -> Self {
+        Statement::Barrier(barrier)
+    }
+}
+
+impl From<BoxStatement> for Statement {
+    fn from(box_statement: BoxStatement) -> Self {
+        Statement::Box(box_statement)
+    }
+}
+
+impl From<Cal> for Statement {
+    fn from(cal: Cal) -> Self {
+        Statement::Cal(cal)
+    }
+}
+
+impl From<CalibrationGrammar> for Statement {
+    fn from(grammar: CalibrationGrammar) -> Self {
+        Statement::CalibrationGrammar(grammar)
+    }
+}
+
+impl From<ClassicalDeclaration> for Statement {
+    fn from(decl: ClassicalDeclaration) -> Self {
+        Statement::ClassicalDeclaration(decl)
+    }
+}
+
+impl From<ConstDeclaration> for Statement {
+    fn from(decl: ConstDeclaration) -> Self {
+        Statement::ConstDeclaration(decl)
+    }
+}
+
+impl From<Def> for Statement {
+    fn from(def: Def) -> Self {
+        Statement::Def(def)
+    }
+}
+
+impl From<Defcal> for Statement {
+    fn from(defcal: Defcal) -> Self {
+        Statement::Defcal(defcal)
+    }
+}
+
+impl From<Delay> for Statement {
+    fn from(delay: Delay) -> Self {
+        Statement::Delay(delay)
+    }
+}
+
+impl From<Extern> for Statement {
+    fn from(extern_stmt: Extern) -> Self {
+        Statement::Extern(extern_stmt)
+    }
+}
+
+impl From<For> for Statement {
+    fn from(for_stmt: For) -> Self {
+        Statement::For(for_stmt)
+    }
+}
+
+impl From<GateCall> for Statement {
+    fn from(gate_call: GateCall) -> Self {
+        Statement::GateCall(gate_call)
+    }
+}
+
+impl From<Gate> for Statement {
+    fn from(gate: Gate) -> Self {
+        Statement::Gate(gate)
+    }
+}
+
+impl From<If> for Statement {
+    fn from(if_stmt: If) -> Self {
+        Statement::If(if_stmt)
+    }
+}
+
+impl From<Include> for Statement {
+    fn from(include: Include) -> Self {
+        Statement::Include(include)
+    }
+}
+
+impl From<IODeclaration> for Statement {
+    fn from(decl: IODeclaration) -> Self {
+        Statement::IODeclaration(decl)
+    }
+}
+
+impl From<MeasureArrowAssignment> for Statement {
+    fn from(assignment: MeasureArrowAssignment) -> Self {
+        Statement::MeasureArrowAssignment(assignment)
+    }
+}
+
+impl From<OldStyleDeclaration> for Statement {
+    fn from(decl: OldStyleDeclaration) -> Self {
+        Statement::OldStyleDeclaration(decl)
+    }
+}
+
+impl From<Pragma> for Statement {
+    fn from(pragma: Pragma) -> Self {
+        Statement::Pragma(pragma)
+    }
+}
+
+impl From<QuantumDeclaration> for Statement {
+    fn from(decl: QuantumDeclaration) -> Self {
+        Statement::QuantumDeclaration(decl)
+    }
+}
+
+impl From<Reset> for Statement {
+    fn from(reset: Reset) -> Self {
+        Statement::Reset(reset)
+    }
+}
+
+impl From<Return> for Statement {
+    fn from(return_stmt: Return) -> Self {
+        Statement::Return(return_stmt)
+    }
+}
+
+impl From<While> for Statement {
+    fn from(while_stmt: While) -> Self {
+        Statement::While(while_stmt)
+    }
+}
+
+impl From<Switch> for Statement {
+    fn from(switch: Switch) -> Self {
+        Statement::Switch(switch)
+    }
+}
+
+impl From<Annotated> for Statement {
+    fn from(annotated: Annotated) -> Self {
+        Statement::Annotated(annotated)
+    }
+}
+
 #[derive(Debug)]
 pub struct Scope {
     body: Vec<StatementOrScope>,
+    indent: usize,
 }
 
 impl Scope {
-    pub fn new<T: From<Scope>>(body: Vec<StatementOrScope>) -> T {
-        Scope { body }.into()
+    pub fn new(body: Vec<StatementOrScope>) -> Scope {
+        Scope { body, indent: 4 }
+    }
+
+    pub fn newt<T: From<Scope>>(body: Vec<StatementOrScope>) -> T {
+        Self::new(body).into()
+    }
+
+    pub fn with_indent(body: Vec<StatementOrScope>, indent: usize) -> Scope {
+        Scope { body, indent }
     }
 }
 
 impl AsQasmStr for Scope {
     fn as_qasm_str(&self) -> String {
-        format!(
-            "{{\n{}\n}}",
-            self.body
-                .iter()
-                .map(|stmt_or_scope| stmt_or_scope.as_qasm_str())
-                .collect::<Vec<String>>()
-                .join("\n")
-        )
+        if self.body.is_empty() {
+            "{}".to_string()
+        } else {
+            format!(
+                "{{\n{}\n}}",
+                indent::indent_all_by(
+                    self.indent,
+                    self.body
+                        .iter()
+                        .map(|stmt_or_scope| stmt_or_scope.as_qasm_str())
+                        .collect::<Vec<String>>()
+                        .join("\n")
+                )
+            )
+        }
     }
 }
 
@@ -1110,5 +1505,657 @@ impl From<Scope> for StatementOrScope {
 impl<T: Into<Statement>> From<T> for StatementOrScope {
     fn from(stmt: T) -> Self {
         StatementOrScope::Statement(stmt.into())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    use indoc::indoc;
+
+    use crate::qasm3::ir::expressions::*;
+    use crate::qasm3::ir::types;
+
+    #[test]
+    fn test_alias_declaration() {
+        assert_eq!(
+            AliasDeclaration::new(
+                Identifier::newt("a".to_string()),
+                vec![Identifier::newt("b".to_string())]
+            )
+            .as_qasm_str(),
+            "let a = b;"
+        );
+    }
+
+    #[test]
+    fn test_assignment() {
+        assert_eq!(
+            Assignment::new(
+                Identifier::newt("a".to_string()),
+                None,
+                Identifier::newt("b".to_string())
+            )
+            .as_qasm_str(),
+            "a = b;"
+        );
+        assert_eq!(
+            Assignment::new(
+                Identifier::newt("a".to_string()),
+                Some(BinaryOperator::Add),
+                Identifier::newt("b".to_string())
+            )
+            .as_qasm_str(),
+            "a += b;"
+        );
+    }
+
+    #[test]
+    fn test_barrier() {
+        assert_eq!(
+            Barrier::new(vec![Identifier::newt("q".to_string())]).as_qasm_str(),
+            "barrier q;"
+        );
+    }
+
+    #[test]
+    fn test_box_statement() {
+        assert_eq!(
+            BoxStatement::new(None, Scope::new(vec![])).as_qasm_str(),
+            "box {}"
+        );
+        assert_eq!(
+            BoxStatement::new(
+                Some(Literal::Timing(1.0, TimingUnit::NS).into()),
+                Scope::new(vec![])
+            )
+            .as_qasm_str(),
+            "box[1ns] {}"
+        );
+    }
+
+    #[test]
+    fn test_cal() {
+        assert_eq!(Cal::new(None).as_qasm_str(), "cal {}");
+    }
+
+    #[test]
+    fn test_calibration_grammar() {
+        assert_eq!(
+            CalibrationGrammar::new("\"openpulse\"".to_string()).as_qasm_str(),
+            "defcalgrammar \"openpulse\";"
+        );
+    }
+
+    #[test]
+    fn test_classical_declaration() {
+        assert_eq!(
+            ClassicalDeclaration::new(
+                Scalar::Bit(None).into(),
+                Identifier::newt("a".to_string()),
+                None
+            )
+            .as_qasm_str(),
+            "bit a;"
+        );
+        assert_eq!(
+            ClassicalDeclaration::new(
+                types::Array::newt(Scalar::Bit(None), vec![Literal::DecimalInteger(1).into()]),
+                Identifier::newt("a".to_string()),
+                None,
+            )
+            .as_qasm_str(),
+            "array[bit, 1] a;"
+        );
+        assert_eq!(
+            ClassicalDeclaration::new(
+                Scalar::Bit(None).into(),
+                Identifier::newt("a".to_string()),
+                Some(Literal::DecimalInteger(0).into())
+            )
+            .as_qasm_str(),
+            "bit a = 0;"
+        );
+    }
+
+    #[test]
+    fn test_const_declaration() {
+        assert_eq!(
+            ConstDeclaration::new(
+                Scalar::Bit(None).into(),
+                Identifier::newt("a".to_string()),
+                Literal::DecimalInteger(0).into()
+            )
+            .as_qasm_str(),
+            "const bit a = 0;"
+        );
+    }
+
+    #[test]
+    fn test_def_argument() {
+        assert_eq!(
+            DefArgument::new(
+                Scalar::Bit(None).into(),
+                Identifier::newt("a".to_string()),
+                None
+            )
+            .as_qasm_str(),
+            "bit a"
+        );
+        assert_eq!(
+            DefArgument::new(
+                types::Register::C.into(),
+                Identifier::newt("c".to_string()),
+                Some(Literal::DecimalInteger(1).into())
+            )
+            .as_qasm_str(),
+            "creg c[1]"
+        );
+    }
+
+    #[test]
+    fn test_def() {
+        assert_eq!(
+            Def::new(
+                Identifier::newt("foo".to_string()),
+                vec![DefArgument::newt(
+                    Scalar::Bit(None).into(),
+                    Identifier::newt("a".to_string()),
+                    None
+                )],
+                None,
+                Scope::new(vec![])
+            )
+            .as_qasm_str(),
+            "def foo(bit a) {}"
+        );
+
+        assert_eq!(
+            Def::new(
+                Identifier::newt("foo".to_string()),
+                vec![DefArgument::newt(
+                    Scalar::Bit(None).into(),
+                    Identifier::newt("a".to_string()),
+                    None
+                )],
+                Some(Scalar::Bit(None).into()),
+                Scope::new(vec![])
+            )
+            .as_qasm_str(),
+            "def foo(bit a) -> bit {}"
+        );
+    }
+
+    #[test]
+    fn test_defcal_target() {
+        assert_eq!(DefcalTarget::Measure.as_qasm_str(), "measure");
+        assert_eq!(DefcalTarget::Reset.as_qasm_str(), "reset");
+        assert_eq!(DefcalTarget::Delay.as_qasm_str(), "delay");
+        assert_eq!(
+            DefcalTarget::Identifier(Identifier::newt("foo".to_string())).as_qasm_str(),
+            "foo"
+        );
+    }
+
+    #[test]
+    fn test_defcal() {
+        assert_eq!(
+            Defcal::new(
+                DefcalTarget::Measure,
+                vec![],
+                vec![Literal::HardwareQubit(1).into()],
+                None,
+                None
+            )
+            .as_qasm_str(),
+            "defcal measure $1 {}"
+        );
+        assert_eq!(
+            Defcal::new(
+                DefcalTarget::Measure,
+                vec![DefcalArgument::DefArgument(DefArgument::newt(
+                    Scalar::Bit(None).into(),
+                    Identifier::newt("a".to_string()),
+                    None
+                ))],
+                vec![Literal::HardwareQubit(1).into()],
+                None,
+                None
+            )
+            .as_qasm_str(),
+            "defcal measure(bit a) $1 {}"
+        );
+        assert_eq!(
+            Defcal::new(
+                DefcalTarget::Measure,
+                vec![DefcalArgument::DefArgument(DefArgument::newt(
+                    Scalar::Bit(None).into(),
+                    Identifier::newt("a".to_string()),
+                    None
+                ))],
+                vec![Literal::HardwareQubit(1).into()],
+                Some(Scalar::Bit(None).into()),
+                None
+            )
+            .as_qasm_str(),
+            "defcal measure(bit a) $1 -> bit {}"
+        );
+        assert_eq!(
+            Defcal::new(
+                DefcalTarget::Measure,
+                vec![DefcalArgument::DefArgument(DefArgument::newt(
+                    Scalar::Bit(None).into(),
+                    Identifier::newt("a".to_string()),
+                    None
+                ))],
+                vec![Literal::HardwareQubit(1).into()],
+                Some(Scalar::Bit(None).into()),
+                Some("...".to_string())
+            )
+            .as_qasm_str(),
+            "defcal measure(bit a) $1 -> bit {...}"
+        );
+    }
+
+    #[test]
+    fn test_delay() {
+        assert_eq!(
+            Delay::new(Literal::Timing(1.0, TimingUnit::NS).into(), vec![]).as_qasm_str(),
+            "delay [1ns];"
+        );
+        assert_eq!(
+            Delay::new(
+                Literal::Timing(1.0, TimingUnit::NS).into(),
+                vec![Literal::HardwareQubit(1).into()]
+            )
+            .as_qasm_str(),
+            "delay [1ns] $1;"
+        );
+    }
+
+    #[test]
+    fn test_extern_argument() {
+        assert_eq!(
+            ExternArgument::new(Scalar::Bit(None).into(), None).as_qasm_str(),
+            "bit"
+        );
+        assert_eq!(
+            ExternArgument::new(
+                types::Array::with_reference(
+                    types::Reference::Mutable,
+                    Scalar::Bit(None),
+                    vec![Literal::DecimalInteger(1).into()],
+                    None
+                )
+                .into(),
+                None
+            )
+            .as_qasm_str(),
+            "mutable array[bit, 1]"
+        );
+        assert_eq!(
+            ExternArgument::new(
+                types::Register::C.into(),
+                Some(Literal::DecimalInteger(1).into())
+            )
+            .as_qasm_str(),
+            "creg[1]"
+        );
+    }
+
+    #[test]
+    fn test_extern() {
+        assert_eq!(
+            Extern::new(Identifier::newt("foo".to_string()), vec![], None).as_qasm_str(),
+            "extern foo();"
+        );
+        assert_eq!(
+            Extern::new(
+                Identifier::newt("foo".to_string()),
+                vec![ExternArgument::newt(Scalar::Bit(None).into(), None)],
+                None
+            )
+            .as_qasm_str(),
+            "extern foo(bit);"
+        );
+        assert_eq!(
+            Extern::new(
+                Identifier::newt("foo".to_string()),
+                vec![ExternArgument::newt(Scalar::Bit(None).into(), None)],
+                Some(Scalar::Bit(None).into())
+            )
+            .as_qasm_str(),
+            "extern foo(bit) -> bit;"
+        );
+    }
+
+    #[test]
+    fn test_for() {
+        assert_eq!(
+            For::new(
+                Scalar::Bit(None),
+                Identifier::newt("a".to_string()),
+                Range::newt(
+                    Some(Literal::DecimalInteger(0).into()),
+                    Some(Literal::DecimalInteger(1).into()),
+                    None
+                ),
+                Scope::new(vec![])
+            )
+            .as_qasm_str(),
+            "for bit a in [0:1] {}"
+        );
+    }
+
+    #[test]
+    fn test_gate_mod() {
+        assert_eq!(GateMod::Inv.as_qasm_str(), "inv @");
+        assert_eq!(
+            GateMod::Pow(Literal::DecimalInteger(2).into()).as_qasm_str(),
+            "pow(2) @"
+        );
+        assert_eq!(
+            GateMod::Ctrl(Some(Literal::DecimalInteger(1).into())).as_qasm_str(),
+            "ctrl(1) @"
+        );
+        assert_eq!(
+            GateMod::NegCtrl(Some(Literal::DecimalInteger(1).into())).as_qasm_str(),
+            "negctrl(1) @"
+        );
+        assert_eq!(GateMod::NegCtrl(None).as_qasm_str(), "negctrl @");
+    }
+
+    #[test]
+    fn test_gate_call() {
+        assert_eq!(
+            GateCall::new(
+                vec![],
+                Identifier::newt("gphase".to_string()),
+                vec![],
+                None,
+                vec![Identifier::newt("pi".to_string())]
+            )
+            .as_qasm_str(),
+            "gphase pi;"
+        );
+        assert_eq!(
+            GateCall::new(
+                vec![],
+                Identifier::newt("foo".to_string()),
+                vec![],
+                None,
+                vec![Identifier::newt("q".to_string())]
+            )
+            .as_qasm_str(),
+            "foo q;"
+        );
+        assert_eq!(
+            GateCall::new(
+                vec![GateMod::Inv],
+                Identifier::newt("foo".to_string()),
+                vec![],
+                None,
+                vec![Identifier::newt("q".to_string())],
+            )
+            .as_qasm_str(),
+            "inv @ foo q;"
+        );
+        assert_eq!(
+            GateCall::new(
+                vec![],
+                Identifier::newt("foo".to_string()),
+                vec![Literal::DecimalInteger(1).into()],
+                None,
+                vec![Identifier::newt("q".to_string())],
+            )
+            .as_qasm_str(),
+            "foo(1) q;"
+        );
+    }
+
+    #[test]
+    fn test_gate() {
+        assert_eq!(
+            Gate::new(
+                Identifier::newt("foo".to_string()),
+                vec![],
+                vec![Identifier::newt("q".to_string())],
+                Scope::new(vec![])
+            )
+            .as_qasm_str(),
+            "gate foo q {}"
+        );
+        assert_eq!(
+            Gate::new(
+                Identifier::newt("foo".to_string()),
+                vec![Identifier::newt("a".to_string())],
+                vec![Identifier::newt("q".to_string())],
+                Scope::new(vec![])
+            )
+            .as_qasm_str(),
+            "gate foo(a) q {}"
+        );
+    }
+
+    #[test]
+    fn test_if() {
+        assert_eq!(
+            If::new(
+                Identifier::newt("a".to_string()),
+                StatementOrScope::Statement(Statement::Break),
+                None
+            )
+            .as_qasm_str(),
+            "if (a) break;"
+        );
+        assert_eq!(
+            If::new(
+                Identifier::newt("a".to_string()),
+                StatementOrScope::Statement(Statement::Break),
+                Some(StatementOrScope::Statement(Statement::Continue))
+            )
+            .as_qasm_str(),
+            "if (a) break; else continue;"
+        );
+    }
+
+    #[test]
+    fn test_include() {
+        assert_eq!(
+            Include::new("stdgates.qasm".to_string()).as_qasm_str(),
+            "include \"stdgates.qasm\";"
+        );
+    }
+
+    #[test]
+    fn test_io_declaration() {
+        assert_eq!(
+            IODeclaration::new(
+                IOType::In,
+                Scalar::Bit(None).into(),
+                Identifier::newt("a".to_string())
+            )
+            .as_qasm_str(),
+            "input bit a;"
+        );
+        assert_eq!(
+            IODeclaration::new(
+                IOType::Out,
+                Scalar::Bit(None).into(),
+                Identifier::newt("a".to_string())
+            )
+            .as_qasm_str(),
+            "output bit a;"
+        );
+        assert_eq!(
+            IODeclaration::new(
+                IOType::In,
+                types::Array::newt(Scalar::Bit(None), vec![Literal::DecimalInteger(1).into()]),
+                Identifier::newt("a".to_string())
+            )
+            .as_qasm_str(),
+            "input array[bit, 1] a;"
+        );
+    }
+
+    #[test]
+    fn test_measure_arrow_assignment() {
+        assert_eq!(
+            MeasureArrowAssignment::new(Measure::newt(Identifier::newt("a".to_string())), None)
+                .as_qasm_str(),
+            "measure a;"
+        );
+        assert_eq!(
+            MeasureArrowAssignment::new(
+                Measure::newt(Identifier::newt("a".to_string())),
+                Some(Identifier::newt("b".to_string()))
+            )
+            .as_qasm_str(),
+            "measure a -> b;"
+        );
+    }
+
+    #[test]
+    fn test_old_style_declaration() {
+        assert_eq!(
+            OldStyleDeclaration::new(
+                types::Register::C.into(),
+                Identifier::newt("c".to_string()),
+                None
+            )
+            .as_qasm_str(),
+            "creg c;"
+        );
+        assert_eq!(
+            OldStyleDeclaration::new(
+                types::Register::C.into(),
+                Identifier::newt("c".to_string()),
+                Some(Literal::DecimalInteger(1).into())
+            )
+            .as_qasm_str(),
+            "creg c[1];"
+        );
+    }
+
+    #[test]
+    fn test_pragma() {
+        assert_eq!(Pragma::new("foo".to_string()).as_qasm_str(), "pragma foo");
+    }
+
+    #[test]
+    fn test_quantum_declaration() {
+        assert_eq!(
+            QuantumDeclaration::new(types::Qubit::newt(None), Identifier::newt("q".to_string()))
+                .as_qasm_str(),
+            "qubit q;"
+        );
+    }
+
+    #[test]
+    fn test_reset() {
+        assert_eq!(
+            Reset::new(Identifier::newt("q".to_string())).as_qasm_str(),
+            "reset q;"
+        );
+    }
+
+    #[test]
+    fn test_return() {
+        assert_eq!(Return::new(None).as_qasm_str(), "return;");
+        assert_eq!(
+            Return::new(Some(Identifier::newt("a".to_string()))).as_qasm_str(),
+            "return a;"
+        );
+    }
+
+    #[test]
+    fn test_while() {
+        assert_eq!(
+            While::new(
+                Identifier::newt("a".to_string()),
+                StatementOrScope::Statement(Statement::Break)
+            )
+            .as_qasm_str(),
+            "while (a) break;"
+        );
+    }
+
+    #[test]
+    fn test_switch_item() {
+        assert_eq!(
+            SwitchItem::new(vec![Identifier::newt("a".to_string())], Scope::new(vec![]))
+                .as_qasm_str(),
+            "case a {}"
+        );
+    }
+
+    #[test]
+    fn test_switch() {
+        assert_eq!(
+            Switch::new(
+                Identifier::newt("a".to_string()),
+                vec![SwitchItem::newt(
+                    vec![Identifier::newt("b".to_string())],
+                    Scope::new(vec![])
+                )],
+                None
+            )
+            .as_qasm_str(),
+            indoc! {r#"
+                switch (a) {
+                    case b {}
+                }"#}
+        );
+        assert_eq!(
+            Switch::new(
+                Identifier::newt("a".to_string()),
+                vec![SwitchItem::newt(
+                    vec![Identifier::newt("b".to_string())],
+                    Scope::new(vec![])
+                )],
+                Some(Scope::new(vec![]))
+            )
+            .as_qasm_str(),
+            indoc! {r#"
+                switch (a) {
+                    case b {}
+                    default: {}
+                }"#}
+        );
+    }
+
+    #[test]
+    fn test_annotation() {
+        assert_eq!(
+            Annotation::new(Identifier::newt("foo".to_string()), "bar".to_string()).as_qasm_str(),
+            "@foo bar"
+        );
+    }
+
+    #[test]
+    fn test_annotated() {
+        assert_eq!(
+            Annotated::new(
+                vec![Annotation::new(
+                    Identifier::newt("noswap".to_string()),
+                    "".to_string()
+                )],
+                BoxStatement::newt(None, Scope::new(vec![]))
+            )
+            .as_qasm_str(),
+            "@noswap\nbox {}"
+        );
+    }
+
+    #[test]
+    fn test_scope() {
+        assert_eq!(Scope::new(vec![]).as_qasm_str(), "{}");
+        assert_eq!(
+            Scope::new(vec![StatementOrScope::Statement(Statement::Break)]).as_qasm_str(),
+            indoc! {r#"{
+                break;
+            }"#}
+        );
     }
 }

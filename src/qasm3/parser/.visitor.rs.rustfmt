@@ -1,0 +1,758 @@
+use crate::qasm3::parser::antlr::qasm3parser::*;
+
+use crate::qasm3::parser::antlr::qasm3VisitorCompat;
+use antlr_rust::tree::ParseTreeVisitorCompat;
+use antlr_rust::tree::ParseTree;
+
+use crate::qasm3::ir;
+
+use std::any::Any;
+
+
+pub struct VisitorReturn {
+    data: Box<dyn Any>,
+}
+
+impl Default for VisitorReturn {
+    fn default() -> Self {
+        VisitorReturn::newt(())
+    }
+}
+
+impl VisitorReturn {
+    fn new(data: Box<dyn Any>) -> Self {
+        VisitorReturn {
+            data,
+        }
+    }
+
+    fn newt<T: 'static>(value: T) -> Self {
+        Self::new(Box::new(value))
+    }
+
+    fn downcast<T: 'static>(self) -> T {
+        *self.data.downcast().unwrap()
+    }
+
+    pub fn result(self) -> ir::Program {
+        self.downcast()
+    }
+}
+
+pub struct Visitor(VisitorReturn);
+
+impl Visitor {
+    pub fn new() -> Self {
+        Visitor(VisitorReturn::default())
+    }
+}
+
+impl<'input> ParseTreeVisitorCompat<'input> for Visitor {
+    type Node = qasm3ContextType;
+    type Return = VisitorReturn;
+
+    fn temp_result(&mut self) -> &mut Self::Return {
+        &mut self.0
+        //&mut self.0
+    }
+
+    fn aggregate_results(
+        &self,
+        _: Self::Return,
+        _: Self::Return,
+    ) -> Self::Return {
+        panic!("Should not be reachable")
+    }
+}
+
+#[allow(unused_variables)]
+impl<'input> qasm3VisitorCompat<'input> for Visitor {
+	/**
+	 * Visit a parse tree produced by {@link qasm3#program}.
+	 * @param ctx the parse tree
+	 */
+		fn visit_program(&mut self, ctx: &ProgramContext<'input>) -> Self::Return {
+            let version = match ctx.version() {
+                Some(version) => Some(self.visit_version(&*version).downcast::<ir::Version>()),
+                None => None,
+            };
+
+            let statement_or_scope_vec = ctx.statementOrScope_all().iter().map(|x| self.visit_statementOrScope(x).downcast::<ir::StatementOrScope>()).collect();
+            VisitorReturn::newt(ir::Program::new(version, statement_or_scope_vec))
+		}
+
+	/**
+	 * Visit a parse tree produced by {@link qasm3#version}.
+	 * @param ctx the parse tree
+	 */
+		fn visit_version(&mut self, ctx: &VersionContext<'input>) -> Self::Return {
+            VisitorReturn::newt(ir::Version::new(ctx.VersionSpecifier().unwrap().get_text()))
+		}
+
+	/**
+	 * Visit a parse tree produced by {@link qasm3#statement}.
+	 * @param ctx the parse tree
+	 */
+		fn visit_statement(&mut self, ctx: &StatementContext<'input>) -> Self::Return {
+			VisitorReturn::newt(())
+		}
+
+	/**
+	 * Visit a parse tree produced by {@link qasm3#annotation}.
+	 * @param ctx the parse tree
+	 */
+		fn visit_annotation(&mut self, ctx: &AnnotationContext<'input>) -> Self::Return {
+			VisitorReturn::newt(())
+		}
+
+	/**
+	 * Visit a parse tree produced by {@link qasm3#scope}.
+	 * @param ctx the parse tree
+	 */
+		fn visit_scope(&mut self, ctx: &ScopeContext<'input>) -> Self::Return {
+			VisitorReturn::newt(())
+		}
+
+	/**
+	 * Visit a parse tree produced by {@link qasm3#pragma}.
+	 * @param ctx the parse tree
+	 */
+		fn visit_pragma(&mut self, ctx: &PragmaContext<'input>) -> Self::Return {
+			VisitorReturn::newt(())
+		}
+
+	/**
+	 * Visit a parse tree produced by {@link qasm3#statementOrScope}.
+	 * @param ctx the parse tree
+	 */
+		fn visit_statementOrScope(&mut self, ctx: &StatementOrScopeContext<'input>) -> Self::Return {
+			VisitorReturn::newt(())
+		}
+
+	/**
+	 * Visit a parse tree produced by {@link qasm3#calibrationGrammarStatement}.
+	 * @param ctx the parse tree
+	 */
+		fn visit_calibrationGrammarStatement(&mut self, ctx: &CalibrationGrammarStatementContext<'input>) -> Self::Return {
+			VisitorReturn::newt(())
+		}
+
+	/**
+	 * Visit a parse tree produced by {@link qasm3#includeStatement}.
+	 * @param ctx the parse tree
+	 */
+		fn visit_includeStatement(&mut self, ctx: &IncludeStatementContext<'input>) -> Self::Return {
+			VisitorReturn::newt(())
+		}
+
+	/**
+	 * Visit a parse tree produced by {@link qasm3#breakStatement}.
+	 * @param ctx the parse tree
+	 */
+		fn visit_breakStatement(&mut self, ctx: &BreakStatementContext<'input>) -> Self::Return {
+			VisitorReturn::newt(())
+		}
+
+	/**
+	 * Visit a parse tree produced by {@link qasm3#continueStatement}.
+	 * @param ctx the parse tree
+	 */
+		fn visit_continueStatement(&mut self, ctx: &ContinueStatementContext<'input>) -> Self::Return {
+			VisitorReturn::newt(())
+		}
+
+	/**
+	 * Visit a parse tree produced by {@link qasm3#endStatement}.
+	 * @param ctx the parse tree
+	 */
+		fn visit_endStatement(&mut self, ctx: &EndStatementContext<'input>) -> Self::Return {
+			VisitorReturn::newt(())
+		}
+
+	/**
+	 * Visit a parse tree produced by {@link qasm3#forStatement}.
+	 * @param ctx the parse tree
+	 */
+		fn visit_forStatement(&mut self, ctx: &ForStatementContext<'input>) -> Self::Return {
+			VisitorReturn::newt(())
+		}
+
+	/**
+	 * Visit a parse tree produced by {@link qasm3#ifStatement}.
+	 * @param ctx the parse tree
+	 */
+		fn visit_ifStatement(&mut self, ctx: &IfStatementContext<'input>) -> Self::Return {
+			VisitorReturn::newt(())
+		}
+
+	/**
+	 * Visit a parse tree produced by {@link qasm3#returnStatement}.
+	 * @param ctx the parse tree
+	 */
+		fn visit_returnStatement(&mut self, ctx: &ReturnStatementContext<'input>) -> Self::Return {
+			VisitorReturn::newt(())
+		}
+
+	/**
+	 * Visit a parse tree produced by {@link qasm3#whileStatement}.
+	 * @param ctx the parse tree
+	 */
+		fn visit_whileStatement(&mut self, ctx: &WhileStatementContext<'input>) -> Self::Return {
+			VisitorReturn::newt(())
+		}
+
+	/**
+	 * Visit a parse tree produced by {@link qasm3#switchStatement}.
+	 * @param ctx the parse tree
+	 */
+		fn visit_switchStatement(&mut self, ctx: &SwitchStatementContext<'input>) -> Self::Return {
+			VisitorReturn::newt(())
+		}
+
+	/**
+	 * Visit a parse tree produced by {@link qasm3#switchCaseItem}.
+	 * @param ctx the parse tree
+	 */
+		fn visit_switchCaseItem(&mut self, ctx: &SwitchCaseItemContext<'input>) -> Self::Return {
+			VisitorReturn::newt(())
+		}
+
+	/**
+	 * Visit a parse tree produced by {@link qasm3#barrierStatement}.
+	 * @param ctx the parse tree
+	 */
+		fn visit_barrierStatement(&mut self, ctx: &BarrierStatementContext<'input>) -> Self::Return {
+			VisitorReturn::newt(())
+		}
+
+	/**
+	 * Visit a parse tree produced by {@link qasm3#boxStatement}.
+	 * @param ctx the parse tree
+	 */
+		fn visit_boxStatement(&mut self, ctx: &BoxStatementContext<'input>) -> Self::Return {
+			VisitorReturn::newt(())
+		}
+
+	/**
+	 * Visit a parse tree produced by {@link qasm3#delayStatement}.
+	 * @param ctx the parse tree
+	 */
+		fn visit_delayStatement(&mut self, ctx: &DelayStatementContext<'input>) -> Self::Return {
+			VisitorReturn::newt(())
+		}
+
+	/**
+	 * Visit a parse tree produced by {@link qasm3#gateCallStatement}.
+	 * @param ctx the parse tree
+	 */
+		fn visit_gateCallStatement(&mut self, ctx: &GateCallStatementContext<'input>) -> Self::Return {
+			VisitorReturn::newt(())
+		}
+
+	/**
+	 * Visit a parse tree produced by {@link qasm3#measureArrowAssignmentStatement}.
+	 * @param ctx the parse tree
+	 */
+		fn visit_measureArrowAssignmentStatement(&mut self, ctx: &MeasureArrowAssignmentStatementContext<'input>) -> Self::Return {
+			VisitorReturn::newt(())
+		}
+
+	/**
+	 * Visit a parse tree produced by {@link qasm3#resetStatement}.
+	 * @param ctx the parse tree
+	 */
+		fn visit_resetStatement(&mut self, ctx: &ResetStatementContext<'input>) -> Self::Return {
+			VisitorReturn::newt(())
+		}
+
+	/**
+	 * Visit a parse tree produced by {@link qasm3#aliasDeclarationStatement}.
+	 * @param ctx the parse tree
+	 */
+		fn visit_aliasDeclarationStatement(&mut self, ctx: &AliasDeclarationStatementContext<'input>) -> Self::Return {
+			VisitorReturn::newt(())
+		}
+
+	/**
+	 * Visit a parse tree produced by {@link qasm3#classicalDeclarationStatement}.
+	 * @param ctx the parse tree
+	 */
+		fn visit_classicalDeclarationStatement(&mut self, ctx: &ClassicalDeclarationStatementContext<'input>) -> Self::Return {
+			VisitorReturn::newt(())
+		}
+
+	/**
+	 * Visit a parse tree produced by {@link qasm3#constDeclarationStatement}.
+	 * @param ctx the parse tree
+	 */
+		fn visit_constDeclarationStatement(&mut self, ctx: &ConstDeclarationStatementContext<'input>) -> Self::Return {
+			VisitorReturn::newt(())
+		}
+
+	/**
+	 * Visit a parse tree produced by {@link qasm3#ioDeclarationStatement}.
+	 * @param ctx the parse tree
+	 */
+		fn visit_ioDeclarationStatement(&mut self, ctx: &IoDeclarationStatementContext<'input>) -> Self::Return {
+			VisitorReturn::newt(())
+		}
+
+	/**
+	 * Visit a parse tree produced by {@link qasm3#oldStyleDeclarationStatement}.
+	 * @param ctx the parse tree
+	 */
+		fn visit_oldStyleDeclarationStatement(&mut self, ctx: &OldStyleDeclarationStatementContext<'input>) -> Self::Return {
+			VisitorReturn::newt(())
+		}
+
+	/**
+	 * Visit a parse tree produced by {@link qasm3#quantumDeclarationStatement}.
+	 * @param ctx the parse tree
+	 */
+		fn visit_quantumDeclarationStatement(&mut self, ctx: &QuantumDeclarationStatementContext<'input>) -> Self::Return {
+			VisitorReturn::newt(())
+		}
+
+	/**
+	 * Visit a parse tree produced by {@link qasm3#defStatement}.
+	 * @param ctx the parse tree
+	 */
+		fn visit_defStatement(&mut self, ctx: &DefStatementContext<'input>) -> Self::Return {
+			VisitorReturn::newt(())
+		}
+
+	/**
+	 * Visit a parse tree produced by {@link qasm3#externStatement}.
+	 * @param ctx the parse tree
+	 */
+		fn visit_externStatement(&mut self, ctx: &ExternStatementContext<'input>) -> Self::Return {
+			VisitorReturn::newt(())
+		}
+
+	/**
+	 * Visit a parse tree produced by {@link qasm3#gateStatement}.
+	 * @param ctx the parse tree
+	 */
+		fn visit_gateStatement(&mut self, ctx: &GateStatementContext<'input>) -> Self::Return {
+			VisitorReturn::newt(())
+		}
+
+	/**
+	 * Visit a parse tree produced by {@link qasm3#assignmentStatement}.
+	 * @param ctx the parse tree
+	 */
+		fn visit_assignmentStatement(&mut self, ctx: &AssignmentStatementContext<'input>) -> Self::Return {
+			VisitorReturn::newt(())
+		}
+
+	/**
+	 * Visit a parse tree produced by {@link qasm3#expressionStatement}.
+	 * @param ctx the parse tree
+	 */
+		fn visit_expressionStatement(&mut self, ctx: &ExpressionStatementContext<'input>) -> Self::Return {
+			VisitorReturn::newt(())
+		}
+
+	/**
+	 * Visit a parse tree produced by {@link qasm3#calStatement}.
+	 * @param ctx the parse tree
+	 */
+		fn visit_calStatement(&mut self, ctx: &CalStatementContext<'input>) -> Self::Return {
+			VisitorReturn::newt(())
+		}
+
+	/**
+	 * Visit a parse tree produced by {@link qasm3#defcalStatement}.
+	 * @param ctx the parse tree
+	 */
+		fn visit_defcalStatement(&mut self, ctx: &DefcalStatementContext<'input>) -> Self::Return {
+			VisitorReturn::newt(())
+		}
+
+	/**
+	 * Visit a parse tree produced by the {@code bitwiseXorExpression}
+	 * labeled alternative in {@link qasm3#expression}.
+	 * @param ctx the parse tree
+	 */
+		fn visit_bitwiseXorExpression(&mut self, ctx: &BitwiseXorExpressionContext<'input>) -> Self::Return {
+			VisitorReturn::newt(())
+		}
+
+	/**
+	 * Visit a parse tree produced by the {@code additiveExpression}
+	 * labeled alternative in {@link qasm3#expression}.
+	 * @param ctx the parse tree
+	 */
+		fn visit_additiveExpression(&mut self, ctx: &AdditiveExpressionContext<'input>) -> Self::Return {
+			VisitorReturn::newt(())
+		}
+
+	/**
+	 * Visit a parse tree produced by the {@code durationofExpression}
+	 * labeled alternative in {@link qasm3#expression}.
+	 * @param ctx the parse tree
+	 */
+		fn visit_durationofExpression(&mut self, ctx: &DurationofExpressionContext<'input>) -> Self::Return {
+			VisitorReturn::newt(())
+		}
+
+	/**
+	 * Visit a parse tree produced by the {@code parenthesisExpression}
+	 * labeled alternative in {@link qasm3#expression}.
+	 * @param ctx the parse tree
+	 */
+		fn visit_parenthesisExpression(&mut self, ctx: &ParenthesisExpressionContext<'input>) -> Self::Return {
+			VisitorReturn::newt(())
+		}
+
+	/**
+	 * Visit a parse tree produced by the {@code comparisonExpression}
+	 * labeled alternative in {@link qasm3#expression}.
+	 * @param ctx the parse tree
+	 */
+		fn visit_comparisonExpression(&mut self, ctx: &ComparisonExpressionContext<'input>) -> Self::Return {
+			VisitorReturn::newt(())
+		}
+
+	/**
+	 * Visit a parse tree produced by the {@code multiplicativeExpression}
+	 * labeled alternative in {@link qasm3#expression}.
+	 * @param ctx the parse tree
+	 */
+		fn visit_multiplicativeExpression(&mut self, ctx: &MultiplicativeExpressionContext<'input>) -> Self::Return {
+			VisitorReturn::newt(())
+		}
+
+	/**
+	 * Visit a parse tree produced by the {@code logicalOrExpression}
+	 * labeled alternative in {@link qasm3#expression}.
+	 * @param ctx the parse tree
+	 */
+		fn visit_logicalOrExpression(&mut self, ctx: &LogicalOrExpressionContext<'input>) -> Self::Return {
+			VisitorReturn::newt(())
+		}
+
+	/**
+	 * Visit a parse tree produced by the {@code castExpression}
+	 * labeled alternative in {@link qasm3#expression}.
+	 * @param ctx the parse tree
+	 */
+		fn visit_castExpression(&mut self, ctx: &CastExpressionContext<'input>) -> Self::Return {
+			VisitorReturn::newt(())
+		}
+
+	/**
+	 * Visit a parse tree produced by the {@code powerExpression}
+	 * labeled alternative in {@link qasm3#expression}.
+	 * @param ctx the parse tree
+	 */
+		fn visit_powerExpression(&mut self, ctx: &PowerExpressionContext<'input>) -> Self::Return {
+			VisitorReturn::newt(())
+		}
+
+	/**
+	 * Visit a parse tree produced by the {@code bitwiseOrExpression}
+	 * labeled alternative in {@link qasm3#expression}.
+	 * @param ctx the parse tree
+	 */
+		fn visit_bitwiseOrExpression(&mut self, ctx: &BitwiseOrExpressionContext<'input>) -> Self::Return {
+			VisitorReturn::newt(())
+		}
+
+	/**
+	 * Visit a parse tree produced by the {@code callExpression}
+	 * labeled alternative in {@link qasm3#expression}.
+	 * @param ctx the parse tree
+	 */
+		fn visit_callExpression(&mut self, ctx: &CallExpressionContext<'input>) -> Self::Return {
+			VisitorReturn::newt(())
+		}
+
+	/**
+	 * Visit a parse tree produced by the {@code bitshiftExpression}
+	 * labeled alternative in {@link qasm3#expression}.
+	 * @param ctx the parse tree
+	 */
+		fn visit_bitshiftExpression(&mut self, ctx: &BitshiftExpressionContext<'input>) -> Self::Return {
+			VisitorReturn::newt(())
+		}
+
+	/**
+	 * Visit a parse tree produced by the {@code bitwiseAndExpression}
+	 * labeled alternative in {@link qasm3#expression}.
+	 * @param ctx the parse tree
+	 */
+		fn visit_bitwiseAndExpression(&mut self, ctx: &BitwiseAndExpressionContext<'input>) -> Self::Return {
+			VisitorReturn::newt(())
+		}
+
+	/**
+	 * Visit a parse tree produced by the {@code equalityExpression}
+	 * labeled alternative in {@link qasm3#expression}.
+	 * @param ctx the parse tree
+	 */
+		fn visit_equalityExpression(&mut self, ctx: &EqualityExpressionContext<'input>) -> Self::Return {
+			VisitorReturn::newt(())
+		}
+
+	/**
+	 * Visit a parse tree produced by the {@code logicalAndExpression}
+	 * labeled alternative in {@link qasm3#expression}.
+	 * @param ctx the parse tree
+	 */
+		fn visit_logicalAndExpression(&mut self, ctx: &LogicalAndExpressionContext<'input>) -> Self::Return {
+			VisitorReturn::newt(())
+		}
+
+	/**
+	 * Visit a parse tree produced by the {@code indexExpression}
+	 * labeled alternative in {@link qasm3#expression}.
+	 * @param ctx the parse tree
+	 */
+		fn visit_indexExpression(&mut self, ctx: &IndexExpressionContext<'input>) -> Self::Return {
+			VisitorReturn::newt(())
+		}
+
+	/**
+	 * Visit a parse tree produced by the {@code unaryExpression}
+	 * labeled alternative in {@link qasm3#expression}.
+	 * @param ctx the parse tree
+	 */
+		fn visit_unaryExpression(&mut self, ctx: &UnaryExpressionContext<'input>) -> Self::Return {
+			VisitorReturn::newt(())
+		}
+
+	/**
+	 * Visit a parse tree produced by the {@code literalExpression}
+	 * labeled alternative in {@link qasm3#expression}.
+	 * @param ctx the parse tree
+	 */
+		fn visit_literalExpression(&mut self, ctx: &LiteralExpressionContext<'input>) -> Self::Return {
+			VisitorReturn::newt(())
+		}
+
+	/**
+	 * Visit a parse tree produced by {@link qasm3#aliasExpression}.
+	 * @param ctx the parse tree
+	 */
+		fn visit_aliasExpression(&mut self, ctx: &AliasExpressionContext<'input>) -> Self::Return {
+			VisitorReturn::newt(())
+		}
+
+	/**
+	 * Visit a parse tree produced by {@link qasm3#declarationExpression}.
+	 * @param ctx the parse tree
+	 */
+		fn visit_declarationExpression(&mut self, ctx: &DeclarationExpressionContext<'input>) -> Self::Return {
+			VisitorReturn::newt(())
+		}
+
+	/**
+	 * Visit a parse tree produced by {@link qasm3#measureExpression}.
+	 * @param ctx the parse tree
+	 */
+		fn visit_measureExpression(&mut self, ctx: &MeasureExpressionContext<'input>) -> Self::Return {
+			VisitorReturn::newt(())
+		}
+
+	/**
+	 * Visit a parse tree produced by {@link qasm3#rangeExpression}.
+	 * @param ctx the parse tree
+	 */
+		fn visit_rangeExpression(&mut self, ctx: &RangeExpressionContext<'input>) -> Self::Return {
+			VisitorReturn::newt(())
+		}
+
+	/**
+	 * Visit a parse tree produced by {@link qasm3#setExpression}.
+	 * @param ctx the parse tree
+	 */
+		fn visit_setExpression(&mut self, ctx: &SetExpressionContext<'input>) -> Self::Return {
+			VisitorReturn::newt(())
+		}
+
+	/**
+	 * Visit a parse tree produced by {@link qasm3#arrayLiteral}.
+	 * @param ctx the parse tree
+	 */
+		fn visit_arrayLiteral(&mut self, ctx: &ArrayLiteralContext<'input>) -> Self::Return {
+			VisitorReturn::newt(())
+		}
+
+	/**
+	 * Visit a parse tree produced by {@link qasm3#indexOperator}.
+	 * @param ctx the parse tree
+	 */
+		fn visit_indexOperator(&mut self, ctx: &IndexOperatorContext<'input>) -> Self::Return {
+			VisitorReturn::newt(())
+		}
+
+	/**
+	 * Visit a parse tree produced by {@link qasm3#indexedIdentifier}.
+	 * @param ctx the parse tree
+	 */
+		fn visit_indexedIdentifier(&mut self, ctx: &IndexedIdentifierContext<'input>) -> Self::Return {
+			VisitorReturn::newt(())
+		}
+
+	/**
+	 * Visit a parse tree produced by {@link qasm3#returnSignature}.
+	 * @param ctx the parse tree
+	 */
+		fn visit_returnSignature(&mut self, ctx: &ReturnSignatureContext<'input>) -> Self::Return {
+			VisitorReturn::newt(())
+		}
+
+	/**
+	 * Visit a parse tree produced by {@link qasm3#gateModifier}.
+	 * @param ctx the parse tree
+	 */
+		fn visit_gateModifier(&mut self, ctx: &GateModifierContext<'input>) -> Self::Return {
+			VisitorReturn::newt(())
+		}
+
+	/**
+	 * Visit a parse tree produced by {@link qasm3#scalarType}.
+	 * @param ctx the parse tree
+	 */
+		fn visit_scalarType(&mut self, ctx: &ScalarTypeContext<'input>) -> Self::Return {
+			VisitorReturn::newt(())
+		}
+
+	/**
+	 * Visit a parse tree produced by {@link qasm3#qubitType}.
+	 * @param ctx the parse tree
+	 */
+		fn visit_qubitType(&mut self, ctx: &QubitTypeContext<'input>) -> Self::Return {
+			VisitorReturn::newt(())
+		}
+
+	/**
+	 * Visit a parse tree produced by {@link qasm3#arrayType}.
+	 * @param ctx the parse tree
+	 */
+		fn visit_arrayType(&mut self, ctx: &ArrayTypeContext<'input>) -> Self::Return {
+			VisitorReturn::newt(())
+		}
+
+	/**
+	 * Visit a parse tree produced by {@link qasm3#arrayReferenceType}.
+	 * @param ctx the parse tree
+	 */
+		fn visit_arrayReferenceType(&mut self, ctx: &ArrayReferenceTypeContext<'input>) -> Self::Return {
+			VisitorReturn::newt(())
+		}
+
+	/**
+	 * Visit a parse tree produced by {@link qasm3#designator}.
+	 * @param ctx the parse tree
+	 */
+		fn visit_designator(&mut self, ctx: &DesignatorContext<'input>) -> Self::Return {
+			VisitorReturn::newt(())
+		}
+
+	/**
+	 * Visit a parse tree produced by {@link qasm3#defcalTarget}.
+	 * @param ctx the parse tree
+	 */
+		fn visit_defcalTarget(&mut self, ctx: &DefcalTargetContext<'input>) -> Self::Return {
+			VisitorReturn::newt(())
+		}
+
+	/**
+	 * Visit a parse tree produced by {@link qasm3#defcalArgumentDefinition}.
+	 * @param ctx the parse tree
+	 */
+		fn visit_defcalArgumentDefinition(&mut self, ctx: &DefcalArgumentDefinitionContext<'input>) -> Self::Return {
+			VisitorReturn::newt(())
+		}
+
+	/**
+	 * Visit a parse tree produced by {@link qasm3#defcalOperand}.
+	 * @param ctx the parse tree
+	 */
+		fn visit_defcalOperand(&mut self, ctx: &DefcalOperandContext<'input>) -> Self::Return {
+			VisitorReturn::newt(())
+		}
+
+	/**
+	 * Visit a parse tree produced by {@link qasm3#gateOperand}.
+	 * @param ctx the parse tree
+	 */
+		fn visit_gateOperand(&mut self, ctx: &GateOperandContext<'input>) -> Self::Return {
+			VisitorReturn::newt(())
+		}
+
+	/**
+	 * Visit a parse tree produced by {@link qasm3#externArgument}.
+	 * @param ctx the parse tree
+	 */
+		fn visit_externArgument(&mut self, ctx: &ExternArgumentContext<'input>) -> Self::Return {
+			VisitorReturn::newt(())
+		}
+
+	/**
+	 * Visit a parse tree produced by {@link qasm3#argumentDefinition}.
+	 * @param ctx the parse tree
+	 */
+		fn visit_argumentDefinition(&mut self, ctx: &ArgumentDefinitionContext<'input>) -> Self::Return {
+			VisitorReturn::newt(())
+		}
+
+	/**
+	 * Visit a parse tree produced by {@link qasm3#argumentDefinitionList}.
+	 * @param ctx the parse tree
+	 */
+		fn visit_argumentDefinitionList(&mut self, ctx: &ArgumentDefinitionListContext<'input>) -> Self::Return {
+			VisitorReturn::newt(())
+		}
+
+	/**
+	 * Visit a parse tree produced by {@link qasm3#defcalArgumentDefinitionList}.
+	 * @param ctx the parse tree
+	 */
+		fn visit_defcalArgumentDefinitionList(&mut self, ctx: &DefcalArgumentDefinitionListContext<'input>) -> Self::Return {
+			VisitorReturn::newt(())
+		}
+
+	/**
+	 * Visit a parse tree produced by {@link qasm3#defcalOperandList}.
+	 * @param ctx the parse tree
+	 */
+		fn visit_defcalOperandList(&mut self, ctx: &DefcalOperandListContext<'input>) -> Self::Return {
+			VisitorReturn::newt(())
+		}
+
+	/**
+	 * Visit a parse tree produced by {@link qasm3#expressionList}.
+	 * @param ctx the parse tree
+	 */
+		fn visit_expressionList(&mut self, ctx: &ExpressionListContext<'input>) -> Self::Return {
+			VisitorReturn::newt(())
+		}
+
+	/**
+	 * Visit a parse tree produced by {@link qasm3#identifierList}.
+	 * @param ctx the parse tree
+	 */
+		fn visit_identifierList(&mut self, ctx: &IdentifierListContext<'input>) -> Self::Return {
+			VisitorReturn::newt(())
+		}
+
+	/**
+	 * Visit a parse tree produced by {@link qasm3#gateOperandList}.
+	 * @param ctx the parse tree
+	 */
+		fn visit_gateOperandList(&mut self, ctx: &GateOperandListContext<'input>) -> Self::Return {
+			VisitorReturn::newt(())
+		}
+
+	/**
+	 * Visit a parse tree produced by {@link qasm3#externArgumentList}.
+	 * @param ctx the parse tree
+	 */
+		fn visit_externArgumentList(&mut self, ctx: &ExternArgumentListContext<'input>) -> Self::Return {
+			VisitorReturn::newt(())
+		}
+
+}
