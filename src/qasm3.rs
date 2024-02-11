@@ -6,7 +6,8 @@
 //! # Example
 //!
 //! ```rust
-//! use qurust::qasm3::{expressions::*, types::*, *};
+//! use qurust::qasm3::ir;
+//! use qurust::qasm3::ir::AsQasmStr;
 //!
 //! // Generate a random bit program:
 //! // ```
@@ -22,48 +23,61 @@
 //! // bit c = measure q;
 //! // ```
 //! fn random_bit_program() -> String {
-//!     program::Program::new(vec![
-//!         blocks::GateDeclaration::new(
-//!             gates::CustomGate::new("h".to_string(), vec![], vec!["q".to_string().into()]),
-//!             vec![
-//!                 statements::GateApplication::new(gates::U3Gate::new(
-//!                     DivOp::new(Literal::Pi.into(), Literal::Uint(2).into()),
-//!                     Literal::Uint(0).into(),
-//!                     Literal::Pi.into(),
-//!                     "q".to_string().into(),
-//!                 )),
-//!                 statements::GateApplication::new(gates::GPGate::new(DivOp::new(
-//!                     Literal::Pi.into(),
-//!                     Literal::Int(-4).into(),
-//!                 ))),
-//!             ],
-//!         ),
-//!         statements::EmptyLine::new(),
-//!         statements::VariableDeclaration::new(Primitive::Qubit.into(), "q".to_string().into(), None),
-//!         statements::GateApplication::new(gates::CustomGate::new(
-//!             "h".to_string(),
-//!             vec![],
-//!             vec!["q".to_string().into()],
-//!         )),
-//!         statements::VariableDeclaration::new(
-//!             Primitive::Bit.into(),
-//!             "c".to_string(),
-//!             Some(Measurement::new(Identifier::from("q".to_string()).into())),
-//!         ),
-//!     ]).as_qasm3_str()
+//!     ir::Program::new(
+//!         Some(ir::Version::new("3.0".to_string())),
+//!         vec![
+//!             ir::Gate::newt(
+//!                 ir::Identifier::new("h".to_string()),
+//!                 vec![],
+//!                 vec![ir::Identifier::new("q".to_string())],
+//!                 ir::Scope::newt(vec![
+//!                     ir::GateCall::newt(
+//!                         vec![],
+//!                         ir::Identifier::new("U".to_string()),
+//!                         vec![
+//!                             ir::BinaryOperation::newt(
+//!                                 ir::BinaryOperator::Div,
+//!                                 ir::Identifier::newt("pi".to_string()),
+//!                                 ir::Literal::DecimalInteger(2).into(),
+//!                             ),
+//!                             ir::Literal::DecimalInteger(0).into(),
+//!                             ir::Identifier::newt("pi".to_string()),
+//!                         ],
+//!                         None,
+//!                         vec![ir::Identifier::newt("q".to_string())],
+//!                     ),
+//!                     ir::GateCall::newt(
+//!                         vec![],
+//!                         ir::Identifier::new("gphase".to_string()),
+//!                         vec![ir::BinaryOperation::newt(
+//!                             ir::BinaryOperator::Div,
+//!                             ir::Identifier::newt("pi".to_string()),
+//!                             ir::Literal::DecimalInteger(-4).into(),
+//!                         )],
+//!                         None,
+//!                         vec![],
+//!                     ),
+//!                 ]),
+//!             ),
+//!             ir::QuantumDeclaration::newt(
+//!                 ir::Qubit::newt(None),
+//!                 ir::Identifier::new("q".to_string()),
+//!             ),
+//!             ir::GateCall::newt(
+//!                 vec![],
+//!                 ir::Identifier::new("h".to_string()),
+//!                 vec![],
+//!                 None,
+//!                 vec![ir::Identifier::newt("q".to_string())],
+//!             ),
+//!             ir::ClassicalDeclaration::newt(
+//!                 ir::Scalar::Bit(None).into(),
+//!                 ir::Identifier::newt("c".to_string()),
+//!                 Some(ir::Measure::newt(ir::Identifier::newt("q".to_string()))),
+//!             ),
+//!         ],
+//!     ).as_qasm_str()
 //! }
 //! ```
 
-pub mod blocks;
-pub mod expressions;
-pub mod gates;
-pub mod program;
-pub mod statements;
-pub mod types;
-
-use std::fmt::Debug;
-
-/// Trait for types convertible to QASM3 string.
-pub trait AsQasmStr: Debug {
-    fn as_qasm3_str(&self) -> String;
-}
+pub mod ir;
