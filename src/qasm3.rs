@@ -61,6 +61,8 @@ pub mod program;
 pub mod statements;
 pub mod types;
 
+pub mod ir;
+
 use std::fmt::Debug;
 
 /// Trait for types convertible to QASM3 string.
