@@ -12,6 +12,8 @@ version = "0.1.0"
 
 [dev-dependencies]
 version-sync = "0.9.5"
+
+[dependencies]
 antlr-rust = "0.3.0-beta"
 
 [badges.maintenance]

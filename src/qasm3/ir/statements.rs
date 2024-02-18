@@ -9,8 +9,12 @@ pub struct AliasDeclaration {
 }
 
 impl AliasDeclaration {
-    pub fn new<T: From<AliasDeclaration>>(identifier: Identifier, expr: Expression) -> T {
-        AliasDeclaration { identifier, expr }.into()
+    pub fn new(identifier: Identifier, expr: Expression) -> AliasDeclaration {
+        AliasDeclaration { identifier, expr }
+    }
+
+    pub fn newt<T: From<AliasDeclaration>>(identifier: Identifier, expr: Expression) -> T {
+        Self::new(identifier, expr).into()
     }
 }
 
@@ -26,30 +30,30 @@ impl AsQasmStr for AliasDeclaration {
 
 #[derive(Debug)]
 pub struct Assignment {
-    identifier: Identifier,
+    id_expr: Expression,
     operator: Option<BinaryOperator>,
     expr: Expression,
 }
 
 impl Assignment {
-    pub fn new<T: From<Assignment>>(identifier: Identifier, expr: Expression) -> T {
+    pub fn new(
+        id_expr: Expression,
+        operator: Option<BinaryOperator>,
+        expr: Expression,
+    ) -> Assignment {
         Assignment {
-            identifier,
-            operator: None,
+            id_expr,
+            operator,
             expr,
-        }.into()
+        }
     }
 
-    pub fn with_op<T: From<Assignment>>(
-        identifier: Identifier,
-        operator: BinaryOperator,
+    pub fn newt<T: From<Assignment>>(
+        id_expr: Expression,
+        operator: Option<BinaryOperator>,
         expr: Expression,
     ) -> T {
-        Assignment {
-            identifier,
-            operator: Some(operator),
-            expr,
-        }.into()
+        Self::new(id_expr, operator, expr).into()
     }
 }
 
@@ -62,7 +66,7 @@ impl AsQasmStr for Assignment {
 
         format!(
             "{} {} {}",
-            self.identifier.as_qasm_str(),
+            self.id_expr.as_qasm_str(),
             assign_op,
             self.expr.as_qasm_str()
         )
@@ -75,8 +79,12 @@ pub struct Barrier {
 }
 
 impl Barrier {
-    pub fn new<T: From<Barrier>>(exprs: Vec<Expression>) -> T {
-        Barrier { exprs }.into()
+    pub fn new(exprs: Vec<Expression>) -> Barrier {
+        Barrier { exprs }
+    }
+
+    pub fn newt<T: From<Barrier>>(exprs: Vec<Expression>) -> T {
+        Self::new(exprs).into()
     }
 }
 
@@ -100,8 +108,12 @@ pub struct BoxStatement {
 }
 
 impl BoxStatement {
-    pub fn new<T: From<BoxStatement>>(expr: Option<Expression>, scope: Scope) -> T {
-        BoxStatement { expr, scope }.into()
+    pub fn new(expr: Option<Expression>, scope: Scope) -> BoxStatement {
+        BoxStatement { expr, scope }
+    }
+
+    pub fn newt<T: From<BoxStatement>>(expr: Option<Expression>, scope: Scope) -> T {
+        Self::new(expr, scope).into()
     }
 }
 
@@ -120,18 +132,22 @@ impl AsQasmStr for BoxStatement {
 
 #[derive(Debug)]
 pub struct Cal {
-    cal_block: String,
+    cal_block: Option<String>,
 }
 
 impl Cal {
-    pub fn new<T: From<Cal>>(cal_block: String) -> T {
-        Cal { cal_block }.into()
+    pub fn new(cal_block: Option<String>) -> Cal {
+        Cal { cal_block }
+    }
+
+    pub fn newt<T: From<Cal>>(cal_block: Option<String>) -> T {
+        Self::new(cal_block).into()
     }
 }
 
 impl AsQasmStr for Cal {
     fn as_qasm_str(&self) -> String {
-        format!("cal {{{}}}", self.cal_block)
+        format!("cal {{{}}}", self.cal_block.clone().unwrap_or_default())
     }
 }
 
@@ -141,8 +157,12 @@ pub struct CalibrationGrammar {
 }
 
 impl CalibrationGrammar {
-    pub fn new<T: From<CalibrationGrammar>>(grammar: String) -> T {
-        CalibrationGrammar { grammar }.into()
+    pub fn new(grammar: String) -> CalibrationGrammar {
+        CalibrationGrammar { grammar }
+    }
+
+    pub fn newt<T: From<CalibrationGrammar>>(grammar: String) -> T {
+        Self::new(grammar).into()
     }
 }
 
@@ -160,12 +180,16 @@ pub struct ClassicalDeclaration {
 }
 
 impl ClassicalDeclaration {
-    pub fn new<T: From<ClassicalDeclaration>>(
+    pub fn new(type_: Type, id: Identifier, expr: Option<Expression>) -> ClassicalDeclaration {
+        ClassicalDeclaration { type_, id, expr }
+    }
+
+    pub fn newt<T: From<ClassicalDeclaration>>(
         type_: Type,
         id: Identifier,
         expr: Option<Expression>,
     ) -> T {
-        ClassicalDeclaration { type_, id, expr }.into()
+        Self::new(type_, id, expr).into()
     }
 }
 
@@ -191,8 +215,12 @@ pub struct ConstDeclaration {
 }
 
 impl ConstDeclaration {
-    pub fn new<T: From<ConstDeclaration>>(type_: Type, id: Identifier, expr: Expression) -> T {
-        ConstDeclaration { type_, id, expr }.into()
+    pub fn new(type_: Type, id: Identifier, expr: Expression) -> ConstDeclaration {
+        ConstDeclaration { type_, id, expr }
+    }
+
+    pub fn newt<T: From<ConstDeclaration>>(type_: Type, id: Identifier, expr: Expression) -> T {
+        Self::new(type_, id, expr).into()
     }
 }
 
@@ -215,26 +243,20 @@ pub struct DefArgument {
 }
 
 impl DefArgument {
-    pub fn new<T: From<DefArgument>>(type_: Type, id: Identifier) -> T {
+    pub fn new(type_: Type, id: Identifier, reg_size: Option<Expression>) -> DefArgument {
         DefArgument {
             type_,
             id,
-            reg_size: None,
+            reg_size,
         }
-        .into()
     }
 
-    pub fn with_reg_size<T: From<DefArgument>>(
+    pub fn newt<T: From<DefArgument>>(
         type_: Type,
         id: Identifier,
-        reg_size: Expression,
+        reg_size: Option<Expression>,
     ) -> T {
-        DefArgument {
-            type_,
-            id,
-            reg_size: Some(reg_size),
-        }
-        .into()
+        Self::new(type_, id, reg_size).into()
     }
 }
 
@@ -261,18 +283,27 @@ pub struct Def {
 }
 
 impl Def {
-    pub fn new<T: From<Def>>(
+    pub fn new(
         id: Identifier,
         args: Vec<DefArgument>,
         ret_type: Option<Type>,
         scope: Scope,
-    ) -> T {
+    ) -> Def {
         Def {
             id,
             args,
             ret_type,
             scope,
-        }.into()
+        }
+    }
+
+    pub fn newt<T: From<Def>>(
+        id: Identifier,
+        args: Vec<DefArgument>,
+        ret_type: Option<Type>,
+        scope: Scope,
+    ) -> T {
+        Self::new(id, args, ret_type, scope).into()
     }
 }
 
@@ -347,24 +378,34 @@ pub struct Defcal {
     args: Vec<DefcalArgument>,
     operands: Vec<Expression>,
     ret_type: Option<Type>,
-    cal_block: String,
+    cal_block: Option<String>,
 }
 
 impl Defcal {
-    pub fn new<T: From<Defcal>>(
+    pub fn new(
         target: DefcalTarget,
         args: Vec<DefcalArgument>,
         operands: Vec<Expression>,
         ret_type: Option<Type>,
-        cal_block: String,
-    ) -> T {
+        cal_block: Option<String>,
+    ) -> Defcal {
         Defcal {
             target,
             args,
             operands,
             ret_type,
             cal_block,
-        }.into()
+        }
+    }
+
+    pub fn newt<T: From<Defcal>>(
+        target: DefcalTarget,
+        args: Vec<DefcalArgument>,
+        operands: Vec<Expression>,
+        ret_type: Option<Type>,
+        cal_block: Option<String>,
+    ) -> T {
+        Self::new(target, args, operands, ret_type, cal_block).into()
     }
 }
 
@@ -387,7 +428,7 @@ impl AsQasmStr for Defcal {
                 Some(ret_type) => format!(" -> {}", ret_type.as_qasm_str()),
                 None => "".to_string(),
             },
-            self.cal_block
+            self.cal_block.clone().unwrap_or_default()
         )
     }
 }
@@ -399,8 +440,12 @@ pub struct Delay {
 }
 
 impl Delay {
-    pub fn new<T: From<Delay>>(duration: Expression, operands: Vec<Expression>) -> T {
-        Delay { duration, operands }.into()
+    pub fn new(duration: Expression, operands: Vec<Expression>) -> Delay {
+        Delay { duration, operands }
+    }
+
+    pub fn newt<T: From<Delay>>(duration: Expression, operands: Vec<Expression>) -> T {
+        Self::new(duration, operands).into()
     }
 }
 
@@ -419,19 +464,48 @@ impl AsQasmStr for Delay {
 }
 
 #[derive(Debug)]
+pub struct ExternArgument {
+    type_: Type,
+    expr: Option<Expression>,
+}
+
+impl ExternArgument {
+    pub fn new(type_: Type, expr: Option<Expression>) -> ExternArgument {
+        ExternArgument { type_, expr }
+    }
+
+    pub fn newt<T: From<ExternArgument>>(type_: Type, expr: Option<Expression>) -> T {
+        Self::new(type_, expr).into()
+    }
+}
+
+impl AsQasmStr for ExternArgument {
+    fn as_qasm_str(&self) -> String {
+        match &self.expr {
+            Some(expr) => format!("{} {}", self.type_.as_qasm_str(), expr.as_qasm_str()),
+            None => self.type_.as_qasm_str(),
+        }
+    }
+}
+
+#[derive(Debug)]
 pub struct Extern {
     id: Identifier,
-    args: Vec<(Type, Option<Expression>)>,
+    args: Vec<ExternArgument>,
     ret_type: Option<Type>,
 }
 
 impl Extern {
-    pub fn new<T: From<Extern>>(
+    pub fn new(id: Identifier, args: Vec<ExternArgument>, ret_type: Option<Type>) -> Extern {
+        Extern { id, args, ret_type }
+    }
+
+    pub fn newt<T: From<Extern>>(
         id: Identifier,
-        args: Vec<(Type, Option<Expression>)>,
+        args: Vec<ExternArgument>,
         ret_type: Option<Type>,
     ) -> T {
-        Extern { id, args, ret_type }.into()
+        Self::new(id, args, ret_type).into()
     }
 }
 
@@ -442,16 +516,7 @@ impl AsQasmStr for Extern {
             self.id.as_qasm_str(),
             self.args
                 .iter()
-                .map(|(type_, expr)| {
-                    format!(
-                        "{}{}",
-                        type_.as_qasm_str(),
-                        match expr {
-                            Some(expr) => format!(" {}", expr.as_qasm_str()),
-                            None => "".to_string(),
-                        }
-                    )
-                })
+                .map(|arg| arg.as_qasm_str())
                 .collect::<Vec<_>>()
                 .join(", "),
             match &self.ret_type {
@@ -471,18 +536,21 @@ pub struct For {
 }
 
 impl For {
-    pub fn new<T: From<For>>(
-        var_type: Scalar,
-        var: Identifier,
-        range: Expression,
-        scope: Scope,
-    ) -> T {
+    pub fn new(var_type: Scalar, var: Identifier, range: Expression, scope: Scope) -> Self {
         For {
             var_type,
             var,
             range,
             scope,
-        }.into()
+        }
+    }
+    pub fn newt<T: From<For>>(
+        var_type: Scalar,
+        var: Identifier,
+        range: Expression,
+        scope: Scope,
+    ) -> T {
+        Self::new(var_type, var, range, scope).into()
     }
 }
 
@@ -502,17 +570,22 @@ impl AsQasmStr for For {
 pub enum GateMod {
     Inv,
     Pow(Expression),
-    Ctrl(Expression),
-    NegCtrl(Expression),
+    Ctrl(Option<Expression>),
+    NegCtrl(Option<Expression>),
 }
 
 impl AsQasmStr for GateMod {
     fn as_qasm_str(&self) -> String {
+        let opt_expr_str = |expr: &Option<Expression>| match expr {
+            Some(expr) => format!("({})", expr.as_qasm_str()),
+            None => "".to_string(),
+        };
+
         match self {
             GateMod::Inv => "inv @".to_string(),
             GateMod::Pow(expr) => format!("pow({}) @", expr.as_qasm_str()),
-            GateMod::Ctrl(expr) => format!("ctrl({}) @", expr.as_qasm_str()),
-            GateMod::NegCtrl(expr) => format!("negctrl({}) @", expr.as_qasm_str()),
+            GateMod::Ctrl(expr) => format!("ctrl{} @", opt_expr_str(expr)),
+            GateMod::NegCtrl(expr) => format!("negctrl{} @", opt_expr_str(expr)),
         }
     }
 }
@@ -527,20 +600,30 @@ pub struct GateCall {
 }
 
 impl GateCall {
-    pub fn new<T: From<GateCall>>(
+    pub fn new(
         mods: Vec<GateMod>,
         id: Identifier,
         params: Vec<Expression>,
         expr: Option<Expression>,
         args: Vec<Expression>,
-    ) -> T {
+    ) -> GateCall {
         GateCall {
             mods,
             id,
             params,
             expr,
             args,
-        }.into()
+        }
+    }
+
+    pub fn newt<T: From<GateCall>>(
+        mods: Vec<GateMod>,
+        id: Identifier,
+        params: Vec<Expression>,
+        expr: Option<Expression>,
+        args: Vec<Expression>,
+    ) -> T {
+        Self::new(mods, id, params, expr, args).into()
     }
 }
 
@@ -581,18 +664,27 @@ pub struct Gate {
 }
 
 impl Gate {
-    pub fn new<T: From<Gate>>(
+    pub fn new(
         id: Identifier,
         params: Vec<Identifier>,
         args: Vec<Identifier>,
         scope: Scope,
-    ) -> T {
+    ) -> Self {
         Gate {
             id,
             params,
             args,
             scope,
-        }.into()
+        }
+    }
+
+    pub fn newt<T: From<Gate>>(
+        id: Identifier,
+        params: Vec<Identifier>,
+        args: Vec<Identifier>,
+        scope: Scope,
+    ) -> T {
+        Self::new(id, params, args, scope).into()
     }
 }
 
@@ -630,24 +722,24 @@ pub struct If {
 }
 
 impl If {
-    pub fn new<T: From<If>>(condition: Expression, body: StatementOrScope) -> T {
-        If {
-            condition: Box::new(condition),
-            body: Box::new(body),
-            else_body: Box::new(None),
-        }.into()
-    }
-
-    pub fn with_else<T: From<If>>(
+    pub fn new(
         condition: Expression,
         body: StatementOrScope,
-        else_body: StatementOrScope,
-    ) -> T {
+        else_body: Option<StatementOrScope>,
+    ) -> Self {
         If {
             condition: Box::new(condition),
             body: Box::new(body),
-            else_body: Box::new(Some(else_body)),
-        }.into()
+            else_body: Box::new(else_body),
+        }
+    }
+
+    pub fn newt<T: From<If>>(
+        condition: Expression,
+        body: StatementOrScope,
+        else_body: Option<StatementOrScope>,
+    ) -> T {
+        Self::new(condition, body, else_body).into()
     }
 }
 
@@ -671,8 +763,12 @@ pub struct Include {
 }
 
 impl Include {
-    pub fn new<T: From<Include>>(path: String) -> T {
-        Include { path }.into()
+    pub fn new(path: String) -> Self {
+        Include { path }
+    }
+
+    pub fn newt<T: From<Include>>(path: String) -> T {
+        Self::new(path).into()
     }
 }
 
@@ -705,8 +801,12 @@ pub struct IODeclaration {
 }
 
 impl IODeclaration {
-    pub fn new<T: From<IODeclaration>>(io_type: IOType, type_: Type, id: Identifier) -> T {
-        IODeclaration { io_type, type_, id }.into()
+    pub fn new(io_type: IOType, type_: Type, id: Identifier) -> Self {
+        IODeclaration { io_type, type_, id }
+    }
+
+    pub fn newt<T: From<IODeclaration>>(io_type: IOType, type_: Type, id: Identifier) -> T {
+        Self::new(io_type, type_, id).into()
     }
 }
 
@@ -728,11 +828,15 @@ pub struct MeasureArrowAssignment {
 }
 
 impl MeasureArrowAssignment {
-    pub fn new<T: From<MeasureArrowAssignment>>(
+    pub fn new(measure_expr: Expression, expr: Option<Expression>) -> Self {
+        MeasureArrowAssignment { measure_expr, expr }
+    }
+
+    pub fn newt<T: From<MeasureArrowAssignment>>(
         measure_expr: Expression,
         expr: Option<Expression>,
     ) -> T {
-        MeasureArrowAssignment { measure_expr, expr }.into()
+        Self::new(measure_expr, expr).into()
     }
 }
 
@@ -757,12 +861,16 @@ pub struct OldStyleDeclaration {
 }
 
 impl OldStyleDeclaration {
-    pub fn new<T: From<OldStyleDeclaration>>(
+    pub fn new(type_: Type, id: Identifier, expr: Option<Expression>) -> Self {
+        OldStyleDeclaration { type_, id, expr }
+    }
+
+    pub fn newt<T: From<OldStyleDeclaration>>(
         type_: Type,
         id: Identifier,
         expr: Option<Expression>,
     ) -> T {
-        OldStyleDeclaration { type_, id, expr }.into()
+        Self::new(type_, id, expr).into()
     }
 }
 
@@ -786,14 +894,18 @@ pub struct Pragma {
 }
 
 impl Pragma {
-    pub fn new<T: From<Pragma>>(content: String) -> T {
-        Pragma { content }.into()
+    pub fn new(content: String) -> Pragma {
+        Pragma { content }
+    }
+
+    pub fn newt<T: From<Pragma>>(content: String) -> T {
+        Pragma::new(content).into()
     }
 }
 
 impl AsQasmStr for Pragma {
     fn as_qasm_str(&self) -> String {
-        format!("pragma {}", self.content)
+        format!("#pragma {}", self.content)
     }
 }
 
@@ -804,8 +916,12 @@ pub struct QuantumDeclaration {
 }
 
 impl QuantumDeclaration {
-    pub fn new<T: From<QuantumDeclaration>>(type_: Type, id: Identifier) -> T {
-        QuantumDeclaration { type_, id }.into()
+    pub fn new(type_: Type, id: Identifier) -> Self {
+        QuantumDeclaration { type_, id }
+    }
+
+    pub fn newt<T: From<QuantumDeclaration>>(type_: Type, id: Identifier) -> T {
+        Self::new(type_, id).into()
     }
 }
 
@@ -817,18 +933,22 @@ impl AsQasmStr for QuantumDeclaration {
 
 #[derive(Debug)]
 pub struct Reset {
-    id: Identifier,
+    expr: Expression,
 }
 
 impl Reset {
-    pub fn new<T: From<Reset>>(id: Identifier) -> T {
-        Reset { id }.into()
+    pub fn new(expr: Expression) -> Reset {
+        Reset { expr }
+    }
+
+    pub fn newt<T: From<Reset>>(expr: Expression) -> T {
+        Reset::new(expr).into()
     }
 }
 
 impl AsQasmStr for Reset {
     fn as_qasm_str(&self) -> String {
-        format!("reset {};", self.id.as_qasm_str())
+        format!("reset {};", self.expr.as_qasm_str())
     }
 }
 
@@ -838,8 +958,12 @@ pub struct Return {
 }
 
 impl Return {
-    pub fn new<T: From<Return>>(expr: Option<Expression>) -> T {
-        Return { expr }.into()
+    pub fn new(expr: Option<Expression>) -> Return {
+        Return { expr }
+    }
+
+    pub fn newt<T: From<Return>>(expr: Option<Expression>) -> T {
+        Self::new(expr).into()
     }
 }
 
@@ -859,8 +983,15 @@ pub struct While {
 }
 
 impl While {
-    pub fn new<T: From<While>>(condition: Expression, body: StatementOrScope) -> T {
-        While { condition, body: Box::new(body) }.into()
+    pub fn new(condition: Expression, body: StatementOrScope) -> While {
+        While {
+            condition,
+            body: Box::new(body),
+        }
+    }
+
+    pub fn newt<T: From<While>>(condition: Expression, body: StatementOrScope) -> T {
+        Self::new(condition, body).into()
     }
 }
 
@@ -881,8 +1012,12 @@ pub struct SwitchItem {
 }
 
 impl SwitchItem {
-    pub fn new<T: From<SwitchItem>>(exprs: Vec<Expression>, body: Scope) -> T {
-        SwitchItem { exprs, body }.into()
+    pub fn new(exprs: Vec<Expression>, body: Scope) -> SwitchItem {
+        SwitchItem { exprs, body }
+    }
+
+    pub fn newt<T: From<SwitchItem>>(exprs: Vec<Expression>, body: Scope) -> T {
+        Self::new(exprs, body).into()
     }
 }
 
@@ -908,16 +1043,20 @@ pub struct Switch {
 }
 
 impl Switch {
-    pub fn new<T: From<Switch>>(
-        expr: Expression,
-        items: Vec<SwitchItem>,
-        default: Option<Scope>,
-    ) -> T {
+    pub fn new(expr: Expression, items: Vec<SwitchItem>, default: Option<Scope>) -> Switch {
         Switch {
             expr,
             items,
             default,
-        }.into()
+        }
+    }
+
+    pub fn newt<T: From<Switch>>(
+        expr: Expression,
+        items: Vec<SwitchItem>,
+        default: Option<Scope>,
+    ) -> T {
+        Self::new(expr, items, default).into()
     }
 }
 
@@ -959,13 +1098,20 @@ impl AsQasmStr for Annotation {
 
 #[derive(Debug)]
 pub struct Annotated {
-    annotations: Vec<Annotation>, 
+    annotations: Vec<Annotation>,
     stmt: Box<Statement>,
 }
 
 impl Annotated {
-    pub fn new<T: From<Annotated>>(annotations: Vec<Annotation>, stmt: Box<Statement>) -> T {
-        Annotated { annotations, stmt }.into()
+    pub fn new(annotations: Vec<Annotation>, stmt: Statement) -> Annotated {
+        Annotated {
+            annotations,
+            stmt: Box::new(stmt),
+        }
+    }
+
+    pub fn newt<T: From<Annotated>>(annotations: Vec<Annotation>, stmt: Statement) -> T {
+        Self::new(annotations, stmt).into()
     }
 }
 
@@ -989,7 +1135,6 @@ impl AsQasmStr for Annotated {
 
 #[derive(Debug)]
 pub enum Statement {
-    Annotated(Annotated),
     AliasDeclaration(AliasDeclaration),
     Assignment(Assignment),
     Barrier(Barrier),
@@ -1014,12 +1159,13 @@ pub enum Statement {
     IODeclaration(IODeclaration),
     MeasureArrowAssignment(MeasureArrowAssignment),
     OldStyleDeclaration(OldStyleDeclaration),
-    Pragma(String),
+    Pragma(Pragma),
     QuantumDeclaration(QuantumDeclaration),
     Reset(Reset),
     Return(Return),
     While(While),
     Switch(Switch),
+    Annotated(Annotated),
 }
 
 impl AsQasmStr for Statement {
@@ -1048,11 +1194,9 @@ impl AsQasmStr for Statement {
             Statement::If(if_stmt) => if_stmt.as_qasm_str(),
             Statement::Include(include) => include.as_qasm_str(),
             Statement::IODeclaration(decl) => decl.as_qasm_str(),
-            Statement::MeasureArrowAssignment(assignment) => {
-                assignment.as_qasm_str()
-            }
+            Statement::MeasureArrowAssignment(assignment) => assignment.as_qasm_str(),
             Statement::OldStyleDeclaration(decl) => decl.as_qasm_str(),
-            Statement::Pragma(pragma) => format!("#pragma {}", pragma),
+            Statement::Pragma(pragma) => pragma.as_qasm_str(),
             Statement::QuantumDeclaration(decl) => decl.as_qasm_str(),
             Statement::Reset(reset) => reset.as_qasm_str(),
             Statement::Return(return_stmt) => return_stmt.as_qasm_str(),
@@ -1062,14 +1206,180 @@ impl AsQasmStr for Statement {
     }
 }
 
+impl From<AliasDeclaration> for Statement {
+    fn from(decl: AliasDeclaration) -> Self {
+        Statement::AliasDeclaration(decl)
+    }
+}
+
+impl From<Assignment> for Statement {
+    fn from(assignment: Assignment) -> Self {
+        Statement::Assignment(assignment)
+    }
+}
+
+impl From<Barrier> for Statement {
+    fn from(barrier: Barrier) -> Self {
+        Statement::Barrier(barrier)
+    }
+}
+
+impl From<BoxStatement> for Statement {
+    fn from(box_statement: BoxStatement) -> Self {
+        Statement::Box(box_statement)
+    }
+}
+
+impl From<Cal> for Statement {
+    fn from(cal: Cal) -> Self {
+        Statement::Cal(cal)
+    }
+}
+
+impl From<CalibrationGrammar> for Statement {
+    fn from(grammar: CalibrationGrammar) -> Self {
+        Statement::CalibrationGrammar(grammar)
+    }
+}
+
+impl From<ClassicalDeclaration> for Statement {
+    fn from(decl: ClassicalDeclaration) -> Self {
+        Statement::ClassicalDeclaration(decl)
+    }
+}
+
+impl From<ConstDeclaration> for Statement {
+    fn from(decl: ConstDeclaration) -> Self {
+        Statement::ConstDeclaration(decl)
+    }
+}
+
+impl From<Def> for Statement {
+    fn from(def: Def) -> Self {
+        Statement::Def(def)
+    }
+}
+
+impl From<Defcal> for Statement {
+    fn from(defcal: Defcal) -> Self {
+        Statement::Defcal(defcal)
+    }
+}
+
+impl From<Delay> for Statement {
+    fn from(delay: Delay) -> Self {
+        Statement::Delay(delay)
+    }
+}
+
+impl From<Extern> for Statement {
+    fn from(extern_stmt: Extern) -> Self {
+        Statement::Extern(extern_stmt)
+    }
+}
+
+impl From<For> for Statement {
+    fn from(for_stmt: For) -> Self {
+        Statement::For(for_stmt)
+    }
+}
+
+impl From<GateCall> for Statement {
+    fn from(gate_call: GateCall) -> Self {
+        Statement::GateCall(gate_call)
+    }
+}
+
+impl From<Gate> for Statement {
+    fn from(gate: Gate) -> Self {
+        Statement::Gate(gate)
+    }
+}
+
+impl From<If> for Statement {
+    fn from(if_stmt: If) -> Self {
+        Statement::If(if_stmt)
+    }
+}
+
+impl From<Include> for Statement {
+    fn from(include: Include) -> Self {
+        Statement::Include(include)
+    }
+}
+
+impl From<IODeclaration> for Statement {
+    fn from(decl: IODeclaration) -> Self {
+        Statement::IODeclaration(decl)
+    }
+}
+
+impl From<MeasureArrowAssignment> for Statement {
+    fn from(assignment: MeasureArrowAssignment) -> Self {
+        Statement::MeasureArrowAssignment(assignment)
+    }
+}
+
+impl From<OldStyleDeclaration> for Statement {
+    fn from(decl: OldStyleDeclaration) -> Self {
+        Statement::OldStyleDeclaration(decl)
+    }
+}
+
+impl From<Pragma> for Statement {
+    fn from(pragma: Pragma) -> Self {
+        Statement::Pragma(pragma)
+    }
+}
+
+impl From<QuantumDeclaration> for Statement {
+    fn from(decl: QuantumDeclaration) -> Self {
+        Statement::QuantumDeclaration(decl)
+    }
+}
+
+impl From<Reset> for Statement {
+    fn from(reset: Reset) -> Self {
+        Statement::Reset(reset)
+    }
+}
+
+impl From<Return> for Statement {
+    fn from(return_stmt: Return) -> Self {
+        Statement::Return(return_stmt)
+    }
+}
+
+impl From<While> for Statement {
+    fn from(while_stmt: While) -> Self {
+        Statement::While(while_stmt)
+    }
+}
+
+impl From<Switch> for Statement {
+    fn from(switch: Switch) -> Self {
+        Statement::Switch(switch)
+    }
+}
+
+impl From<Annotated> for Statement {
+    fn from(annotated: Annotated) -> Self {
+        Statement::Annotated(annotated)
+    }
+}
+
 #[derive(Debug)]
 pub struct Scope {
     body: Vec<StatementOrScope>,
 }
 
 impl Scope {
-    pub fn new<T: From<Scope>>(body: Vec<StatementOrScope>) -> T {
-        Scope { body }.into()
+    pub fn new(body: Vec<StatementOrScope>) -> Scope {
+        Scope { body }
+    }
+
+    pub fn newt<T: From<Scope>>(body: Vec<StatementOrScope>) -> T {
+        Self::new(body).into()
     }
 }
 

@@ -62,6 +62,7 @@ pub mod statements;
 pub mod types;
 
 pub mod ir;
+pub mod parser;
 
 use std::fmt::Debug;
 

@@ -11,34 +11,32 @@ use std::fmt::Debug;
 pub enum Scalar {
     Bit(Option<Expression>),
     Int(Option<Expression>),
-    Uint(Option<Expression>),
+    UInt(Option<Expression>),
     Float(Option<Expression>),
     Angle(Option<Expression>),
     Bool,
     Duration,
     Stretch,
-    Complex(Option<Expression>),
+    Complex(Box<Scalar>),
 }
 
 impl AsQasmStr for Scalar {
     fn as_qasm_str(&self) -> String {
-        let format_expr = |e: &Option<Expression>| {
-            match e {
-                Some(expr) => expr.as_qasm_str(),
-                None => "".to_string(),
-            }
+        let format_expr = |e: &Option<Expression>| match e {
+            Some(expr) => expr.as_qasm_str(),
+            None => "".to_string(),
         };
 
         match self {
             Scalar::Bit(expr) => format_expr(expr),
             Scalar::Int(expr) => format_expr(expr),
-            Scalar::Uint(expr) => format_expr(expr),
+            Scalar::UInt(expr) => format_expr(expr),
             Scalar::Float(expr) => format_expr(expr),
             Scalar::Angle(expr) => format_expr(expr),
             Scalar::Bool => "bool".to_string(),
             Scalar::Duration => "duration".to_string(),
             Scalar::Stretch => "stretch".to_string(),
-            Scalar::Complex(expr) => format_expr(expr),
+            Scalar::Complex(scalar) => scalar.as_qasm_str(),
         }
     }
 }
@@ -49,9 +47,12 @@ pub struct Qubit {
 }
 
 impl Qubit {
-    #[allow(clippy::new_ret_no_self)]
-    pub fn new<T: From<Qubit>>(expr: Option<Expression>) -> T {
+    pub fn new(expr: Option<Expression>) -> Self {
         Qubit { expr }.into()
+    }
+
+    pub fn newt<T: From<Qubit>>(expr: Option<Expression>) -> T {
+        Qubit::new(expr).into()
     }
 }
 
@@ -83,47 +84,49 @@ impl AsQasmStr for Reference {
 pub struct Array {
     ref_type: Option<Reference>,
     scalar_type: Box<Scalar>,
-    dimensions: Option<Expression>,
     exprs: Vec<Expression>,
+    dim: Option<Expression>,
 }
 
 impl Array {
-    #[allow(clippy::new_ret_no_self)]
-    pub fn new<T: From<Array>>(scalar_type: Scalar, exprs: Vec<Expression>) -> T {
+    pub fn new(scalar_type: Scalar, exprs: Vec<Expression>) -> Self {
         Array {
             ref_type: None,
             scalar_type: Box::new(scalar_type),
-            dimensions: None,
             exprs,
+            dim: None,
         }
-        .into()
     }
 
-    pub fn with_reference<T: From<Array>>(
+    pub fn newt<T: From<Array>>(scalar_type: Scalar, exprs: Vec<Expression>) -> T {
+        Array::new(scalar_type, exprs).into()
+    }
+
+    pub fn with_reference(
         ref_type: Reference,
         scalar_type: Scalar,
-        dimensions: Expression,
-    ) -> T {
+        exprs: Vec<Expression>,
+        dim: Option<Expression>,
+    ) -> Self {
         Array {
             ref_type: Some(ref_type),
             scalar_type: Box::new(scalar_type),
-            dimensions: Some(dimensions),
-            exprs: vec![],
+            exprs,
+            dim,
         }
-        .into()
     }
 }
 
 impl AsQasmStr for Array {
     fn as_qasm_str(&self) -> String {
         match &self.ref_type {
-            Some(ref_type) => match &self.dimensions {
-                Some(dimensions) => {
+            Some(ref_type) => match &self.dim {
+                Some(dim) => {
                     format!(
                         "{} array[{}, #dim = {}]",
                         ref_type.as_qasm_str(),
                         self.scalar_type.as_qasm_str(),
-                        dimensions.as_qasm_str()
+                        dim.as_qasm_str()
                     )
                 }
                 None => {

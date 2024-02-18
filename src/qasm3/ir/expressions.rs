@@ -30,13 +30,15 @@ pub struct Index {
 }
 
 impl Index {
-    #[allow(clippy::new_ret_no_self)]
-    pub fn new<T: From<Index>>(expr: Expression, index: Expression) -> T {
+    pub fn new(expr: Expression, index: Expression) -> Self {
         Self {
             expr: Box::new(expr),
             index: Box::new(index),
         }
-        .into()
+    }
+
+    pub fn newt<T: From<Index>>(expr: Expression, index: Expression) -> T {
+        Self::new(expr, index).into()
     }
 }
 
@@ -51,6 +53,17 @@ pub enum UnaryOperator {
     BitNeg,
     Not,
     Minus,
+}
+
+impl UnaryOperator {
+    pub fn from_str(s: &str) -> Self {
+        match s {
+            "~" => UnaryOperator::BitNeg,
+            "!" => UnaryOperator::Not,
+            "-" => UnaryOperator::Minus,
+            _ => panic!("Invalid unary operator: {}", s),
+        }
+    }
 }
 
 impl AsQasmStr for UnaryOperator {
@@ -71,13 +84,15 @@ pub struct UnaryOperation {
 }
 
 impl UnaryOperation {
-    #[allow(clippy::new_ret_no_self)]
-    pub fn new<T: From<UnaryOperation>>(operator: UnaryOperator, expr: Expression) -> T {
+    pub fn new(operator: UnaryOperator, expr: Expression) -> Self {
         Self {
             operator,
             expr: Box::new(expr),
         }
-        .into()
+    }
+
+    pub fn newt<T: From<UnaryOperation>>(operator: UnaryOperator, expr: Expression) -> T {
+        Self::new(operator, expr).into()
     }
 }
 
@@ -106,14 +121,43 @@ pub enum BinaryOperator {
     BitAnd,
     BitXor,
     BitOr,
+    BitNeg,
     And,
     Or,
+}
+
+impl BinaryOperator {
+    pub fn from_str(s: &str) -> Self {
+        match s {
+            "**" => BinaryOperator::Pow,
+            "*" => BinaryOperator::Mul,
+            "/" => BinaryOperator::Div,
+            "%" => BinaryOperator::Mod,
+            "+" => BinaryOperator::Add,
+            "-" => BinaryOperator::Sub,
+            "<<" => BinaryOperator::LShift,
+            ">>" => BinaryOperator::RShift,
+            "<" => BinaryOperator::Lt,
+            "<=" => BinaryOperator::Leq,
+            ">" => BinaryOperator::Gt,
+            ">=" => BinaryOperator::Geq,
+            "==" => BinaryOperator::Eq,
+            "!=" => BinaryOperator::Neq,
+            "&" => BinaryOperator::BitAnd,
+            "^" => BinaryOperator::BitXor,
+            "|" => BinaryOperator::BitOr,
+            "~" => BinaryOperator::BitNeg,
+            "&&" => BinaryOperator::And,
+            "||" => BinaryOperator::Or,
+            _ => panic!("Invalid binary operator: {}", s),
+        }
+    }
 }
 
 impl AsQasmStr for BinaryOperator {
     fn as_qasm_str(&self) -> String {
         match self {
-            BinaryOperator::Pow => "^",
+            BinaryOperator::Pow => "**",
             BinaryOperator::Mul => "*",
             BinaryOperator::Div => "/",
             BinaryOperator::Mod => "%",
@@ -130,6 +174,7 @@ impl AsQasmStr for BinaryOperator {
             BinaryOperator::BitAnd => "&",
             BinaryOperator::BitXor => "^",
             BinaryOperator::BitOr => "|",
+            BinaryOperator::BitNeg => "~",
             BinaryOperator::And => "&&",
             BinaryOperator::Or => "||",
         }
@@ -145,18 +190,20 @@ pub struct BinaryOperation {
 }
 
 impl BinaryOperation {
-    #[allow(clippy::new_ret_no_self)]
-    pub fn new<T: From<BinaryOperation>>(
-        operator: BinaryOperator,
-        lhs: Expression,
-        rhs: Expression,
-    ) -> T {
+    pub fn new(operator: BinaryOperator, lhs: Expression, rhs: Expression) -> Self {
         Self {
             operator,
             lhs: Box::new(lhs),
             rhs: Box::new(rhs),
         }
-        .into()
+    }
+
+    pub fn newt<T: From<BinaryOperation>>(
+        operator: BinaryOperator,
+        lhs: Expression,
+        rhs: Expression,
+    ) -> T {
+        Self::new(operator, lhs, rhs).into()
     }
 }
 
@@ -178,13 +225,15 @@ pub struct Cast {
 }
 
 impl Cast {
-    #[allow(clippy::new_ret_no_self)]
-    pub fn new<T: From<Cast>>(type_: Type, expr: Expression) -> T {
+    pub fn new(type_: Type, expr: Expression) -> Self {
         Self {
             type_,
             expr: Box::new(expr),
         }
-        .into()
+    }
+
+    pub fn newt<T: From<Cast>>(type_: Type, expr: Expression) -> T {
+        Self::new(type_, expr).into()
     }
 }
 
@@ -201,11 +250,13 @@ pub struct DurationOf {
 
 impl DurationOf {
     #[allow(clippy::new_ret_no_self)]
-    pub fn new<T: From<DurationOf>>(scope: Scope) -> T {
+    pub fn new(scope: Scope) -> Self {
         Self {
             scope: Box::new(scope),
         }
-        .into()
+    }
+    pub fn newt<T: From<DurationOf>>(scope: Scope) -> T {
+        Self::new(scope).into()
     }
 }
 
@@ -222,9 +273,12 @@ pub struct Call {
 }
 
 impl Call {
-    #[allow(clippy::new_ret_no_self)]
-    pub fn new<T: From<Call>>(identifier: Identifier, args: Vec<Expression>) -> T {
-        Self { identifier, args }.into()
+    pub fn new(identifier: Identifier, args: Vec<Expression>) -> Self {
+        Self { identifier, args }
+    }
+
+    pub fn newt<T: From<Call>>(identifier: Identifier, args: Vec<Expression>) -> T {
+        Self::new(identifier, args).into()
     }
 }
 
@@ -248,8 +302,12 @@ pub struct Identifier {
 }
 
 impl Identifier {
-    pub fn new<T: From<Identifier>>(name: String) -> T {
-        Self { name }.into()
+    pub fn new(name: String) -> Self {
+        Self { name }
+    }
+
+    pub fn newt<T: From<Identifier>>(name: String) -> T {
+        Self::new(name).into()
     }
 }
 
@@ -347,12 +405,14 @@ pub struct Measure {
 }
 
 impl Measure {
-    #[allow(clippy::new_ret_no_self)]
-    pub fn new<T: From<Measure>>(expr: Expression) -> T {
+    pub fn new(expr: Expression) -> Self {
         Self {
             expr: Box::new(expr),
         }
-        .into()
+    }
+
+    pub fn newt<T: From<Measure>>(expr: Expression) -> T {
+        Self::new(expr).into()
     }
 }
 
@@ -370,18 +430,24 @@ pub struct Range {
 }
 
 impl Range {
-    #[allow(clippy::new_ret_no_self)]
-    pub fn new<T: From<Range>>(
+    pub fn new(
         start: Option<Expression>,
         end: Option<Expression>,
         step: Option<Expression>,
-    ) -> T {
+    ) -> Self {
         Self {
             start: Box::new(start),
             end: Box::new(end),
             step: Box::new(step),
         }
-        .into()
+    }
+
+    pub fn newt<T: From<Range>>(
+        start: Option<Expression>,
+        end: Option<Expression>,
+        step: Option<Expression>,
+    ) -> T {
+        Self::new(start, end, step).into()
     }
 }
 
@@ -411,9 +477,13 @@ pub struct Array {
 }
 
 impl Array {
+    pub fn new(exprs: Vec<Expression>) -> Self {
+        Self { exprs }
+    }
+
     #[allow(clippy::new_ret_no_self)]
-    pub fn new<T: From<Array>>(exprs: Vec<Expression>) -> T {
-        Self { exprs }.into()
+    pub fn newt<T: From<Array>>(exprs: Vec<Expression>) -> T {
+        Self::new(exprs).into()
     }
 }
 
@@ -507,9 +577,9 @@ impl From<Call> for Expression {
     }
 }
 
-impl From<Literal> for Expression {
-    fn from(lit: Literal) -> Self {
-        Expression::Literal(lit)
+impl<T: Into<Literal>> From<T> for Expression {
+    fn from(lit: T) -> Self {
+        Expression::Literal(lit.into())
     }
 }
 
