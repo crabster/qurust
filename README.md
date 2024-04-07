@@ -12,7 +12,7 @@ Update your Cargo.toml by including `qurust`:
 
 ```
 [dependencies]
-qurust = "0.1.0"
+qurust = "0.2.0"
 ```
 
 ## Contributing
