@@ -1,2 +1,6 @@
 /target
 /Cargo.lock
+/antlr_runtime
+/src/qasm3/parser/antlr/*.interp
+/src/qasm3/parser/antlr/*.tokens
+/src/qasm3/parser/antlr/*.rs
