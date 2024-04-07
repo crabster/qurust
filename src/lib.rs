@@ -4,6 +4,6 @@
 //! We refer to OpenQASM3 as QASM3 for short.
 //! For more information and an example, see the module documentation.
 
-#![doc(html_root_url = "https://docs.rs/qurust/0.1.0")]
+#![doc(html_root_url = "https://docs.rs/qurust/0.2.0")]
 
 pub mod qasm3;
