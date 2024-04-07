@@ -1,7 +1,7 @@
-//! QASM3 meta program representation.
+//! QASM3 meta program representation and parsing.
 //!
-//! This module contains structures and enums for representing QASM3 programs.
-//! The structures and enums are designed to be easily convertible to QASM3 string.
+//! This module contains structures and enums for representing QASM3 programs as well as a parser.
+//! The structures and enums are designed to be convertible to QASM3 string.
 //!
 //! # Example
 //!
@@ -21,7 +21,7 @@
 //! // qubit q;
 //! // h q;
 //! // bit c = measure q;
-//! // ```
+//!
 //! fn random_bit_program() -> String {
 //!     ir::Program::new(
 //!         Some(ir::Version::new("3.0".to_string())),

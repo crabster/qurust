@@ -1,7 +1,16 @@
+//! Structures and enums for QASM3 statements and scopes representation.
+//!
+//! Statements are parts of QASM3 code, which are defined by the `statementOrScope`
+//! rule in the antlr4 grammar for QASM3. To learn more about statements, you can refer to
+//! the official [QASM3 documentation](https://openqasm.com/versions/3.0/language/index.html)
+//! and to view a list of statements, have a look at the
+//! [QASM3 grammar files](https://github.com/openqasm/openqasm/tree/main/source/grammar).
+
 use crate::qasm3::ir::expressions::{BinaryOperator, Expression, Identifier};
 use crate::qasm3::ir::types::{Scalar, Type};
 use crate::qasm3::ir::AsQasmStr;
 
+/// QASM3 alias declaration.
 #[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub struct AliasDeclaration {
     identifier: Identifier,
@@ -32,6 +41,7 @@ impl AsQasmStr for AliasDeclaration {
     }
 }
 
+/// QASM3 (compound) assignment statement.
 #[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub struct Assignment {
     id_expr: Expression,
@@ -77,6 +87,7 @@ impl AsQasmStr for Assignment {
     }
 }
 
+/// QASM3 barrier statement.
 #[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub struct Barrier {
     exprs: Vec<Expression>,
@@ -109,6 +120,7 @@ impl AsQasmStr for Barrier {
     }
 }
 
+/// QASM3 box statement.
 #[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub struct BoxStatement {
     expr: Option<Expression>,
@@ -138,6 +150,7 @@ impl AsQasmStr for BoxStatement {
     }
 }
 
+/// QASM3 calibration block.
 #[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub struct Cal {
     cal_block: Option<String>,
@@ -159,6 +172,7 @@ impl AsQasmStr for Cal {
     }
 }
 
+/// QASM3 calibration grammar declaration.
 #[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub struct CalibrationGrammar {
     grammar: String,
@@ -180,6 +194,7 @@ impl AsQasmStr for CalibrationGrammar {
     }
 }
 
+/// QASM3 classical declaration statement.
 #[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub struct ClassicalDeclaration {
     type_: Type,
@@ -215,6 +230,7 @@ impl AsQasmStr for ClassicalDeclaration {
     }
 }
 
+/// QASM3 constant declaration statement.
 #[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub struct ConstDeclaration {
     type_: Type,
@@ -243,6 +259,7 @@ impl AsQasmStr for ConstDeclaration {
     }
 }
 
+/// QASM3 function argument.
 #[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub struct DefArgument {
     type_: Type,
@@ -282,6 +299,7 @@ impl AsQasmStr for DefArgument {
     }
 }
 
+/// QASM3 function definition.
 #[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub struct Def {
     id: Identifier,
@@ -334,6 +352,7 @@ impl AsQasmStr for Def {
     }
 }
 
+/// QASM3 defcal target.
 #[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub enum DefcalTarget {
     Measure,
@@ -353,6 +372,7 @@ impl AsQasmStr for DefcalTarget {
     }
 }
 
+/// QASM3 defcal argument.
 #[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub enum DefcalArgument {
     DefArgument(DefArgument),
@@ -380,6 +400,7 @@ impl From<Expression> for DefcalArgument {
     }
 }
 
+/// QASM3 defcal statement.
 #[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub struct Defcal {
     target: DefcalTarget,
@@ -446,6 +467,7 @@ impl AsQasmStr for Defcal {
     }
 }
 
+/// QASM3 delay statement.
 #[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub struct Delay {
     duration: Expression,
@@ -480,6 +502,7 @@ impl AsQasmStr for Delay {
     }
 }
 
+/// QASM3 extern argument.
 #[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub struct ExternArgument {
     type_: Type,
@@ -505,6 +528,7 @@ impl AsQasmStr for ExternArgument {
     }
 }
 
+/// QASM3 extern function declaration.
 #[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub struct Extern {
     id: Identifier,
@@ -544,6 +568,7 @@ impl AsQasmStr for Extern {
     }
 }
 
+/// QASM3 for loop statement.
 #[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub struct For {
     var_type: Scalar,
@@ -586,6 +611,7 @@ impl AsQasmStr for For {
     }
 }
 
+/// QASM3 gate modifier.
 #[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub enum GateMod {
     Inv,
@@ -610,6 +636,7 @@ impl AsQasmStr for GateMod {
     }
 }
 
+/// QASM3 gate call statement.
 #[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub struct GateCall {
     mods: Vec<GateMod>,
@@ -699,6 +726,7 @@ impl AsQasmStr for GateCall {
     }
 }
 
+/// QASM3 gate definition.
 #[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub struct Gate {
     id: Identifier,
@@ -758,6 +786,7 @@ impl AsQasmStr for Gate {
     }
 }
 
+/// QASM3 if statement.
 #[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub struct If {
     condition: Box<Expression>,
@@ -801,6 +830,7 @@ impl AsQasmStr for If {
     }
 }
 
+/// QASM3 include statement.
 #[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub struct Include {
     path: String,
@@ -822,6 +852,7 @@ impl AsQasmStr for Include {
     }
 }
 
+/// QASM3 let statement.
 #[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub enum IOType {
     In,
@@ -837,6 +868,7 @@ impl AsQasmStr for IOType {
     }
 }
 
+/// QASM3 IO declaration.
 #[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub struct IODeclaration {
     io_type: IOType,
@@ -865,6 +897,7 @@ impl AsQasmStr for IODeclaration {
     }
 }
 
+/// QASM3 measure arrow statement.
 #[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub struct MeasureArrowAssignment {
     measure_expr: Expression,
@@ -897,6 +930,7 @@ impl AsQasmStr for MeasureArrowAssignment {
     }
 }
 
+/// QASM3 old style declaration statement.
 #[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub struct OldStyleDeclaration {
     type_: Type,
@@ -932,6 +966,7 @@ impl AsQasmStr for OldStyleDeclaration {
     }
 }
 
+/// QASM3 pragma statement.
 #[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub struct Pragma {
     content: String,
@@ -953,6 +988,7 @@ impl AsQasmStr for Pragma {
     }
 }
 
+/// QASM3 quantum declaration statement.
 #[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub struct QuantumDeclaration {
     type_: Type,
@@ -975,6 +1011,7 @@ impl AsQasmStr for QuantumDeclaration {
     }
 }
 
+/// QASM3 reset statement.
 #[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub struct Reset {
     expr: Expression,
@@ -996,6 +1033,7 @@ impl AsQasmStr for Reset {
     }
 }
 
+/// QASM3 return statement.
 #[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub struct Return {
     expr: Option<Expression>,
@@ -1020,6 +1058,7 @@ impl AsQasmStr for Return {
     }
 }
 
+/// QASM3 while loop statement.
 #[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub struct While {
     condition: Expression,
@@ -1049,6 +1088,7 @@ impl AsQasmStr for While {
     }
 }
 
+/// QASM3 switch item.
 #[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub struct SwitchItem {
     exprs: Vec<Expression>,
@@ -1079,6 +1119,7 @@ impl AsQasmStr for SwitchItem {
     }
 }
 
+/// QASM3 switch statement.
 #[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub struct Switch {
     expr: Expression,
@@ -1146,6 +1187,7 @@ impl AsQasmStr for Switch {
     }
 }
 
+/// QASM3 annotation.
 #[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub struct Annotation {
     id: Identifier,
@@ -1169,6 +1211,7 @@ impl AsQasmStr for Annotation {
     }
 }
 
+/// QASM3 annotated statement.
 #[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub struct Annotated {
     annotations: Vec<Annotation>,
@@ -1206,6 +1249,7 @@ impl AsQasmStr for Annotated {
     }
 }
 
+/// QASM3 statement enum representing all possible statements.
 #[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub enum Statement {
     AliasDeclaration(AliasDeclaration),
@@ -1441,6 +1485,7 @@ impl From<Annotated> for Statement {
     }
 }
 
+/// QASM3 scope.
 #[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub struct Scope {
     body: Vec<StatementOrScope>,
@@ -1481,6 +1526,7 @@ impl AsQasmStr for Scope {
     }
 }
 
+/// Enum representing either a QASM3 statement or a QASM3 scope.
 #[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub enum StatementOrScope {
     Statement(Statement),
