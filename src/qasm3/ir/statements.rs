@@ -1164,7 +1164,7 @@ impl Switch {
 impl AsQasmStr for Switch {
     fn as_qasm_str(&self) -> String {
         let mut body = "".to_string();
-        if !self.items.is_empty() || !self.default.is_none() {
+        if !self.items.is_empty() || self.default.is_some() {
             body = format!(
                 "\n{}\n{}",
                 self.items
@@ -1234,7 +1234,7 @@ impl Annotated {
 impl AsQasmStr for Annotated {
     fn as_qasm_str(&self) -> String {
         if self.annotations.is_empty() {
-            return self.stmt.as_qasm_str();
+            self.stmt.as_qasm_str()
         } else {
             format!(
                 "{}\n{}",
