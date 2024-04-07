@@ -55,7 +55,7 @@ pub struct Qubit {
 
 impl Qubit {
     pub fn new(expr: Option<Expression>) -> Self {
-        Qubit { expr }.into()
+        Qubit { expr }
     }
 
     pub fn newt<T: From<Qubit>>(expr: Option<Expression>) -> T {

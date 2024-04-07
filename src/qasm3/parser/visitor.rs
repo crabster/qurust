@@ -69,10 +69,9 @@ fn parse_hardware_qubit(qubit: &str) -> ir::Expression {
 #[allow(non_snake_case)]
 impl<'input> qasm3VisitorCompat<'input> for Visitor {
     fn visit_program(&mut self, ctx: &ProgramContext<'input>) -> Self::Return {
-        let version = match ctx.version() {
-            Some(version) => Some(self.visit_version(&*version).downcast::<ir::Version>()),
-            None => None,
-        };
+        let version = ctx
+            .version()
+            .map(|x| self.visit_version(&x).downcast::<ir::Version>());
 
         let statement_or_scope_vec = ctx
             .statementOrScope_all()
@@ -156,11 +155,11 @@ impl<'input> qasm3VisitorCompat<'input> for Visitor {
      */
     fn visit_statementOrScope(&mut self, ctx: &StatementOrScopeContext<'input>) -> Self::Return {
         let statement_or_scope: ir::StatementOrScope = if ctx.statement().is_some() {
-            self.visit_statement(&*ctx.statement().unwrap())
+            self.visit_statement(&ctx.statement().unwrap())
                 .downcast::<ir::Statement>()
                 .into()
         } else {
-            self.visit_scope(&*ctx.scope().unwrap())
+            self.visit_scope(&ctx.scope().unwrap())
                 .downcast::<ir::Scope>()
                 .into()
         };
@@ -369,7 +368,7 @@ impl<'input> qasm3VisitorCompat<'input> for Visitor {
         let gate_mods = ctx
             .gateModifier_all()
             .iter()
-            .map(|x| self.visit_gateModifier(&*x).downcast::<ir::GateMod>())
+            .map(|x| self.visit_gateModifier(x).downcast::<ir::GateMod>())
             .collect();
         let params = ctx
             .expressionList()
@@ -601,7 +600,7 @@ impl<'input> qasm3VisitorCompat<'input> for Visitor {
     ) -> Self::Return {
         let assign_op = ctx.CompoundAssignmentOperator().map(|op| {
             let s = op.get_text();
-            ir::BinaryOperator::from_str(&s[0..s.len() - 1])
+            ir::BinaryOperator::new(&s[0..s.len() - 1])
         });
         let id_expr = self
             .visit(&*ctx.indexedIdentifier().unwrap())
@@ -692,7 +691,7 @@ impl<'input> qasm3VisitorCompat<'input> for Visitor {
         ctx: &AdditiveExpressionContext<'input>,
     ) -> Self::Return {
         VisitorReturn::newt::<ir::Expression>(ir::BinaryOperation::newt(
-            ir::BinaryOperator::from_str(ctx.op.as_ref().unwrap().get_text()),
+            ir::BinaryOperator::new(ctx.op.as_ref().unwrap().get_text()),
             self.visit(&*ctx.expression(0).unwrap())
                 .downcast::<ir::Expression>(),
             self.visit(&*ctx.expression(1).unwrap())
@@ -739,7 +738,7 @@ impl<'input> qasm3VisitorCompat<'input> for Visitor {
         ctx: &ComparisonExpressionContext<'input>,
     ) -> Self::Return {
         VisitorReturn::newt::<ir::Expression>(ir::BinaryOperation::newt(
-            ir::BinaryOperator::from_str(ctx.op.as_ref().unwrap().get_text()),
+            ir::BinaryOperator::new(ctx.op.as_ref().unwrap().get_text()),
             self.visit(&*ctx.expression(0).unwrap())
                 .downcast::<ir::Expression>(),
             self.visit(&*ctx.expression(1).unwrap())
@@ -757,7 +756,7 @@ impl<'input> qasm3VisitorCompat<'input> for Visitor {
         ctx: &MultiplicativeExpressionContext<'input>,
     ) -> Self::Return {
         VisitorReturn::newt::<ir::Expression>(ir::BinaryOperation::newt(
-            ir::BinaryOperator::from_str(ctx.op.as_ref().unwrap().get_text()),
+            ir::BinaryOperator::new(ctx.op.as_ref().unwrap().get_text()),
             self.visit(&*ctx.expression(0).unwrap())
                 .downcast::<ir::Expression>(),
             self.visit(&*ctx.expression(1).unwrap())
@@ -859,7 +858,7 @@ impl<'input> qasm3VisitorCompat<'input> for Visitor {
         ctx: &BitshiftExpressionContext<'input>,
     ) -> Self::Return {
         VisitorReturn::newt::<ir::Expression>(ir::BinaryOperation::newt(
-            ir::BinaryOperator::from_str(&ctx.BitshiftOperator().unwrap().get_text()),
+            ir::BinaryOperator::new(&ctx.BitshiftOperator().unwrap().get_text()),
             self.visit(&*ctx.expression(0).unwrap())
                 .downcast::<ir::Expression>(),
             self.visit(&*ctx.expression(1).unwrap())
@@ -895,7 +894,7 @@ impl<'input> qasm3VisitorCompat<'input> for Visitor {
         ctx: &EqualityExpressionContext<'input>,
     ) -> Self::Return {
         VisitorReturn::newt::<ir::Expression>(ir::BinaryOperation::newt(
-            ir::BinaryOperator::from_str(&ctx.EqualityOperator().unwrap().get_text()),
+            ir::BinaryOperator::new(&ctx.EqualityOperator().unwrap().get_text()),
             self.visit(&*ctx.expression(0).unwrap())
                 .downcast::<ir::Expression>(),
             self.visit(&*ctx.expression(1).unwrap())
@@ -942,7 +941,7 @@ impl<'input> qasm3VisitorCompat<'input> for Visitor {
      */
     fn visit_unaryExpression(&mut self, ctx: &UnaryExpressionContext<'input>) -> Self::Return {
         VisitorReturn::newt::<ir::Expression>(ir::UnaryOperation::newt(
-            ir::UnaryOperator::from_str(ctx.op.as_ref().unwrap().get_text()),
+            ir::UnaryOperator::new(ctx.op.as_ref().unwrap().get_text()),
             self.visit(&*ctx.expression().unwrap())
                 .downcast::<ir::Expression>(),
         ))
@@ -1018,10 +1017,10 @@ impl<'input> qasm3VisitorCompat<'input> for Visitor {
             let timing_str = ctx.TimingLiteral().unwrap().get_text();
             let split = re.captures(&timing_str).unwrap();
             let num = split[1].parse().unwrap();
-            let unit = ir::TimingUnit::from_str(&split[3]);
+            let unit = ir::TimingUnit::new(&split[3]);
             ir::Literal::Timing(num, unit).into()
         } else {
-            parse_hardware_qubit(ctx.HardwareQubit().unwrap().get_text().as_str()).into()
+            parse_hardware_qubit(ctx.HardwareQubit().unwrap().get_text().as_str())
         })
     }
 
@@ -1368,7 +1367,7 @@ impl<'input> qasm3VisitorCompat<'input> for Visitor {
             self.visit(&*ctx.indexedIdentifier().unwrap())
                 .downcast::<ir::Expression>()
         } else {
-            parse_hardware_qubit(ctx.HardwareQubit().unwrap().get_text().as_str()).into()
+            parse_hardware_qubit(ctx.HardwareQubit().unwrap().get_text().as_str())
         })
     }
 
@@ -1413,7 +1412,6 @@ impl<'input> qasm3VisitorCompat<'input> for Visitor {
         } else if ctx.qubitType().is_some() {
             self.visit(&*ctx.qubitType().unwrap())
                 .downcast::<ir::Type>()
-                .into()
         } else if ctx.CREG().is_some() {
             ir::types::Register::C.into()
         } else if ctx.QREG().is_some() {

@@ -77,7 +77,7 @@ pub enum UnaryOperator {
 }
 
 impl UnaryOperator {
-    pub fn from_str(s: &str) -> Self {
+    pub fn new(s: &str) -> Self {
         match s {
             "~" => UnaryOperator::BitNeg,
             "!" => UnaryOperator::Not,
@@ -150,7 +150,7 @@ pub enum BinaryOperator {
 }
 
 impl BinaryOperator {
-    pub fn from_str(s: &str) -> Self {
+    pub fn new(s: &str) -> Self {
         match s {
             "**" => BinaryOperator::Pow,
             "*" => BinaryOperator::Mul,
@@ -356,7 +356,7 @@ pub enum TimingUnit {
 }
 
 impl TimingUnit {
-    pub fn from_str(s: &str) -> Self {
+    pub fn new(s: &str) -> Self {
         match s {
             "dt" => TimingUnit::DT,
             "ns" => TimingUnit::NS,
@@ -692,7 +692,7 @@ mod tests {
         ];
 
         for (str_op, un_op) in &un_op_map {
-            assert_eq!(UnaryOperator::from_str(str_op), *un_op);
+            assert_eq!(UnaryOperator::new(str_op), *un_op);
             assert_eq!(
                 UnaryOperation::new(un_op.clone(), Literal::DecimalInteger(1).into()).as_qasm_str(),
                 format!("{}1", str_op)
@@ -726,7 +726,7 @@ mod tests {
         ];
 
         for (str_op, bin_op) in &bin_op_map {
-            assert_eq!(BinaryOperator::from_str(str_op), *bin_op);
+            assert_eq!(BinaryOperator::new(str_op), *bin_op);
             assert_eq!(
                 BinaryOperation::new(
                     bin_op.clone(),
