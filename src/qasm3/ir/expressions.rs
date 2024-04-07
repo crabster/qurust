@@ -1,7 +1,16 @@
+//! Structures and enums for QASM3 expressions representation.
+//!
+//! Expressions are parts of QASM3 code, which are defined by the `expression` rule in
+//! the antlr4 grammar for QASM3. To learn more about expressions, you can refer to the official
+//! [QASM3 documentation](https://openqasm.com/versions/3.0/language/index.html) and to view
+//! a list of expressions, have a look at the
+//! [QASM3 grammar files](https://github.com/openqasm/openqasm/tree/main/source/grammar).
+
 use crate::qasm3::ir::statements::Scope;
 use crate::qasm3::ir::types::Type;
 use crate::qasm3::ir::AsQasmStr;
 
+/// QASM3 parenthesis expression.
 #[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub struct Parenthesis {
     expr: Box<Expression>,
@@ -25,6 +34,7 @@ impl AsQasmStr for Parenthesis {
     }
 }
 
+/// QASM3 index expression.
 #[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub struct Index {
     expr: Box<Expression>,
@@ -58,6 +68,7 @@ impl AsQasmStr for Index {
     }
 }
 
+/// QASM3 unary operator.
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd)]
 pub enum UnaryOperator {
     BitNeg,
@@ -87,6 +98,7 @@ impl AsQasmStr for UnaryOperator {
     }
 }
 
+/// QASM3 unary operation.
 #[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub struct UnaryOperation {
     operator: UnaryOperator,
@@ -112,6 +124,7 @@ impl AsQasmStr for UnaryOperation {
     }
 }
 
+/// QASM3 binary operator.
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd)]
 pub enum BinaryOperator {
     Pow,
@@ -192,6 +205,7 @@ impl AsQasmStr for BinaryOperator {
     }
 }
 
+/// QASM3 binary operation.
 #[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub struct BinaryOperation {
     operator: BinaryOperator,
@@ -228,6 +242,7 @@ impl AsQasmStr for BinaryOperation {
     }
 }
 
+/// QASM3 type cast expression.
 #[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub struct Cast {
     type_: Type,
@@ -253,6 +268,7 @@ impl AsQasmStr for Cast {
     }
 }
 
+/// QASM3 duration expression.
 #[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub struct DurationOf {
     scope: Box<Scope>,
@@ -276,6 +292,7 @@ impl AsQasmStr for DurationOf {
     }
 }
 
+/// QASM3 function call expression.
 #[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub struct Call {
     identifier: Identifier,
@@ -306,6 +323,7 @@ impl AsQasmStr for Call {
     }
 }
 
+/// QASM3 identifier expression.
 #[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub struct Identifier {
     name: String,
@@ -327,6 +345,7 @@ impl AsQasmStr for Identifier {
     }
 }
 
+/// QASM3 timing unit.
 #[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub enum TimingUnit {
     DT,
@@ -361,6 +380,7 @@ impl AsQasmStr for TimingUnit {
     }
 }
 
+/// QASM3 literal expression.
 #[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub enum Literal {
     Identifier(Identifier),
@@ -400,6 +420,7 @@ impl From<Identifier> for Literal {
     }
 }
 
+/// QASM3 alias expression.
 #[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub struct Alias {
     aliases: Vec<Expression>,
@@ -425,6 +446,7 @@ impl AsQasmStr for Alias {
     }
 }
 
+/// QASM3 measure expression.
 #[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub struct Measure {
     expr: Box<Expression>,
@@ -448,6 +470,7 @@ impl AsQasmStr for Measure {
     }
 }
 
+/// QASM3 range expression.
 #[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub struct Range {
     start: Box<Option<Expression>>,
@@ -497,6 +520,7 @@ impl AsQasmStr for Range {
     }
 }
 
+/// QASM3 array expression.
 #[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub struct Array {
     exprs: Vec<Expression>,
@@ -525,6 +549,7 @@ impl AsQasmStr for Array {
     }
 }
 
+/// QASM3 expression enum representing all possible expressions.
 #[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub enum Expression {
     Parenthesis(Parenthesis),

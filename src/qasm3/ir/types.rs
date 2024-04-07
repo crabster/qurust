@@ -1,10 +1,12 @@
 //! Structures and enums for QASM3 types representation.
 //!
-//! All types used in QASM3 programs are defined by the `Type` enum.
+//! You can learn more about types from the official
+//! [QASM3 documentation](https://openqasm.com/versions/3.0/language/types.html).
 
 use crate::qasm3::ir::expressions::Expression;
 use crate::qasm3::ir::AsQasmStr;
 
+/// QASM3 scalar type.
 #[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub enum Scalar {
     Bit(Option<Expression>),
@@ -45,6 +47,7 @@ impl AsQasmStr for Scalar {
     }
 }
 
+/// QASM3 qubit type.
 #[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub struct Qubit {
     expr: Option<Expression>,
@@ -69,6 +72,7 @@ impl AsQasmStr for Qubit {
     }
 }
 
+/// QASM3 reference type used in array reference types.
 #[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub enum Reference {
     ReadOnly,
@@ -84,6 +88,7 @@ impl AsQasmStr for Reference {
     }
 }
 
+/// QASM3 array type.
 #[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub struct Array {
     ref_type: Option<Reference>,
@@ -160,6 +165,7 @@ impl AsQasmStr for Array {
     }
 }
 
+/// QASM3 register type.
 #[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub enum Register {
     C,
@@ -175,6 +181,7 @@ impl AsQasmStr for Register {
     }
 }
 
+/// QASM3 type enum representing all possible types.
 #[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub enum Type {
     Scalar(Box<Scalar>),

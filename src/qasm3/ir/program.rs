@@ -1,6 +1,13 @@
+//! Structures and enums for QASM3 program representation.
+//!
+//! To learn more about QASM3 programs, please refer to the official
+//! [QASM3 documentation](https://openqasm.com/versions/3.0/language/index.html)
+//! and [QASM3 grammar files](https://github.com/openqasm/openqasm/tree/main/source/grammar).
+
 use crate::qasm3::ir::statements::StatementOrScope;
 use crate::qasm3::ir::AsQasmStr;
 
+/// QASM3 version declaration.
 #[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub struct Version {
     tag: String,
@@ -18,6 +25,7 @@ impl AsQasmStr for Version {
     }
 }
 
+/// QASM3 program representation.
 #[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub struct Program {
     version: Option<Version>,
