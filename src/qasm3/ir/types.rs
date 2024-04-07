@@ -5,9 +5,7 @@
 use crate::qasm3::ir::expressions::Expression;
 use crate::qasm3::ir::AsQasmStr;
 
-use std::fmt::Debug;
-
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub enum Scalar {
     Bit(Option<Expression>),
     Int(Option<Expression>),
@@ -47,7 +45,7 @@ impl AsQasmStr for Scalar {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub struct Qubit {
     expr: Option<Expression>,
 }
@@ -71,7 +69,7 @@ impl AsQasmStr for Qubit {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub enum Reference {
     ReadOnly,
     Mutable,
@@ -86,7 +84,7 @@ impl AsQasmStr for Reference {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub struct Array {
     ref_type: Option<Reference>,
     scalar_type: Box<Scalar>,
@@ -162,7 +160,7 @@ impl AsQasmStr for Array {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub enum Register {
     C,
     Q,
@@ -177,7 +175,7 @@ impl AsQasmStr for Register {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub enum Type {
     Scalar(Box<Scalar>),
     Qubit(Box<Qubit>),

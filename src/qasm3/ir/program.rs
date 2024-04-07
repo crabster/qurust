@@ -1,7 +1,7 @@
 use crate::qasm3::ir::statements::StatementOrScope;
 use crate::qasm3::ir::AsQasmStr;
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub struct Version {
     tag: String,
 }
@@ -18,7 +18,7 @@ impl AsQasmStr for Version {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub struct Program {
     version: Option<Version>,
     parts: Vec<StatementOrScope>,

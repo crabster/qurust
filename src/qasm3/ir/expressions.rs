@@ -2,7 +2,7 @@ use crate::qasm3::ir::statements::Scope;
 use crate::qasm3::ir::types::Type;
 use crate::qasm3::ir::AsQasmStr;
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub struct Parenthesis {
     expr: Box<Expression>,
 }
@@ -25,7 +25,7 @@ impl AsQasmStr for Parenthesis {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub struct Index {
     expr: Box<Expression>,
     indexes: Vec<Expression>,
@@ -58,7 +58,7 @@ impl AsQasmStr for Index {
     }
 }
 
-#[derive(Debug, PartialEq, Eq, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd)]
 pub enum UnaryOperator {
     BitNeg,
     Not,
@@ -87,7 +87,7 @@ impl AsQasmStr for UnaryOperator {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub struct UnaryOperation {
     operator: UnaryOperator,
     expr: Box<Expression>,
@@ -112,7 +112,7 @@ impl AsQasmStr for UnaryOperation {
     }
 }
 
-#[derive(Debug, PartialEq, Eq, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd)]
 pub enum BinaryOperator {
     Pow,
     Mul,
@@ -192,7 +192,7 @@ impl AsQasmStr for BinaryOperator {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub struct BinaryOperation {
     operator: BinaryOperator,
     lhs: Box<Expression>,
@@ -228,7 +228,7 @@ impl AsQasmStr for BinaryOperation {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub struct Cast {
     type_: Type,
     expr: Box<Expression>,
@@ -253,7 +253,7 @@ impl AsQasmStr for Cast {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub struct DurationOf {
     scope: Box<Scope>,
 }
@@ -276,7 +276,7 @@ impl AsQasmStr for DurationOf {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub struct Call {
     identifier: Identifier,
     args: Vec<Expression>,
@@ -306,7 +306,7 @@ impl AsQasmStr for Call {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub struct Identifier {
     name: String,
 }
@@ -327,7 +327,7 @@ impl AsQasmStr for Identifier {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub enum TimingUnit {
     DT,
     NS,
@@ -361,7 +361,7 @@ impl AsQasmStr for TimingUnit {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub enum Literal {
     Identifier(Identifier),
     BinaryInteger(i64),
@@ -400,7 +400,7 @@ impl From<Identifier> for Literal {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub struct Alias {
     aliases: Vec<Expression>,
 }
@@ -425,7 +425,7 @@ impl AsQasmStr for Alias {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub struct Measure {
     expr: Box<Expression>,
 }
@@ -448,7 +448,7 @@ impl AsQasmStr for Measure {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub struct Range {
     start: Box<Option<Expression>>,
     end: Box<Option<Expression>>,
@@ -497,7 +497,7 @@ impl AsQasmStr for Range {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub struct Array {
     exprs: Vec<Expression>,
 }
@@ -525,7 +525,7 @@ impl AsQasmStr for Array {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub enum Expression {
     Parenthesis(Parenthesis),
     Index(Index),
