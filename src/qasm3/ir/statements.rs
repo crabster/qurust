@@ -2,7 +2,7 @@ use crate::qasm3::ir::expressions::{BinaryOperator, Expression, Identifier};
 use crate::qasm3::ir::types::{Scalar, Type};
 use crate::qasm3::ir::AsQasmStr;
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub struct AliasDeclaration {
     identifier: Identifier,
     exprs: Vec<Expression>,
@@ -32,7 +32,7 @@ impl AsQasmStr for AliasDeclaration {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub struct Assignment {
     id_expr: Expression,
     operator: Option<BinaryOperator>,
@@ -77,7 +77,7 @@ impl AsQasmStr for Assignment {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub struct Barrier {
     exprs: Vec<Expression>,
 }
@@ -109,7 +109,7 @@ impl AsQasmStr for Barrier {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub struct BoxStatement {
     expr: Option<Expression>,
     scope: Scope,
@@ -138,7 +138,7 @@ impl AsQasmStr for BoxStatement {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub struct Cal {
     cal_block: Option<String>,
 }
@@ -159,7 +159,7 @@ impl AsQasmStr for Cal {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub struct CalibrationGrammar {
     grammar: String,
 }
@@ -180,7 +180,7 @@ impl AsQasmStr for CalibrationGrammar {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub struct ClassicalDeclaration {
     type_: Type,
     id: Identifier,
@@ -215,7 +215,7 @@ impl AsQasmStr for ClassicalDeclaration {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub struct ConstDeclaration {
     type_: Type,
     id: Identifier,
@@ -243,7 +243,7 @@ impl AsQasmStr for ConstDeclaration {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub struct DefArgument {
     type_: Type,
     id: Identifier,
@@ -282,7 +282,7 @@ impl AsQasmStr for DefArgument {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub struct Def {
     id: Identifier,
     args: Vec<DefArgument>,
@@ -334,7 +334,7 @@ impl AsQasmStr for Def {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub enum DefcalTarget {
     Measure,
     Reset,
@@ -353,7 +353,7 @@ impl AsQasmStr for DefcalTarget {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub enum DefcalArgument {
     DefArgument(DefArgument),
     Expression(Expression),
@@ -380,7 +380,7 @@ impl From<Expression> for DefcalArgument {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub struct Defcal {
     target: DefcalTarget,
     args: Vec<DefcalArgument>,
@@ -446,7 +446,7 @@ impl AsQasmStr for Defcal {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub struct Delay {
     duration: Expression,
     operands: Vec<Expression>,
@@ -480,7 +480,7 @@ impl AsQasmStr for Delay {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub struct ExternArgument {
     type_: Type,
     expr: Option<Expression>,
@@ -505,7 +505,7 @@ impl AsQasmStr for ExternArgument {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub struct Extern {
     id: Identifier,
     args: Vec<ExternArgument>,
@@ -544,7 +544,7 @@ impl AsQasmStr for Extern {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub struct For {
     var_type: Scalar,
     var: Identifier,
@@ -586,7 +586,7 @@ impl AsQasmStr for For {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub enum GateMod {
     Inv,
     Pow(Expression),
@@ -610,7 +610,7 @@ impl AsQasmStr for GateMod {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub struct GateCall {
     mods: Vec<GateMod>,
     id: Identifier,
@@ -699,7 +699,7 @@ impl AsQasmStr for GateCall {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub struct Gate {
     id: Identifier,
     params: Vec<Identifier>,
@@ -758,7 +758,7 @@ impl AsQasmStr for Gate {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub struct If {
     condition: Box<Expression>,
     body: Box<StatementOrScope>,
@@ -801,7 +801,7 @@ impl AsQasmStr for If {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub struct Include {
     path: String,
 }
@@ -822,7 +822,7 @@ impl AsQasmStr for Include {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub enum IOType {
     In,
     Out,
@@ -837,7 +837,7 @@ impl AsQasmStr for IOType {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub struct IODeclaration {
     io_type: IOType,
     type_: Type,
@@ -865,7 +865,7 @@ impl AsQasmStr for IODeclaration {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub struct MeasureArrowAssignment {
     measure_expr: Expression,
     expr: Option<Expression>,
@@ -897,7 +897,7 @@ impl AsQasmStr for MeasureArrowAssignment {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub struct OldStyleDeclaration {
     type_: Type,
     id: Identifier,
@@ -932,7 +932,7 @@ impl AsQasmStr for OldStyleDeclaration {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub struct Pragma {
     content: String,
 }
@@ -953,7 +953,7 @@ impl AsQasmStr for Pragma {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub struct QuantumDeclaration {
     type_: Type,
     id: Identifier,
@@ -975,7 +975,7 @@ impl AsQasmStr for QuantumDeclaration {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub struct Reset {
     expr: Expression,
 }
@@ -996,7 +996,7 @@ impl AsQasmStr for Reset {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub struct Return {
     expr: Option<Expression>,
 }
@@ -1020,7 +1020,7 @@ impl AsQasmStr for Return {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub struct While {
     condition: Expression,
     body: Box<StatementOrScope>,
@@ -1049,7 +1049,7 @@ impl AsQasmStr for While {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub struct SwitchItem {
     exprs: Vec<Expression>,
     body: Scope,
@@ -1079,7 +1079,7 @@ impl AsQasmStr for SwitchItem {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub struct Switch {
     expr: Expression,
     items: Vec<SwitchItem>,
@@ -1146,7 +1146,7 @@ impl AsQasmStr for Switch {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub struct Annotation {
     id: Identifier,
     content: String,
@@ -1169,7 +1169,7 @@ impl AsQasmStr for Annotation {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub struct Annotated {
     annotations: Vec<Annotation>,
     stmt: Box<Statement>,
@@ -1206,7 +1206,7 @@ impl AsQasmStr for Annotated {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub enum Statement {
     AliasDeclaration(AliasDeclaration),
     Assignment(Assignment),
@@ -1441,7 +1441,7 @@ impl From<Annotated> for Statement {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub struct Scope {
     body: Vec<StatementOrScope>,
     indent: usize,
@@ -1481,7 +1481,7 @@ impl AsQasmStr for Scope {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub enum StatementOrScope {
     Statement(Statement),
     Scope(Scope),
